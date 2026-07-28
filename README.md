@@ -11,7 +11,7 @@
 
 Este sistema consiste en una solución **SCADA / HMI Ciberfísica Web Unificada** para la automatización y control de acceso a un estacionamiento de 100 plazas, desarrollado conforme a los requerimientos técnicos y esquemas de tiempo especificados en el III Parcial.
 
-Toda la aplicación está consolidada en un **único archivo de entrada (`index.html`)**, eliminando la necesidad de gestionar carpetas múltiples o servidores web locales.
+Toda la aplicación está consolidada en un **único archivo de entrada (`index.html`)**. La gestión y persistencia de usuarios funciona **100% de forma automática mediante `localStorage`**, permitiendo registrar o crear usuarios desde la interfaz o el modal Admin y disponer de ellos inmediatamente sin importar/exportar archivos externos.
 
 ---
 
@@ -38,11 +38,11 @@ Toda la aplicación está consolidada en un **único archivo de entrada (`index.
   - Algoritmo: `PBKDF2` con `SHA-256`, 100.000 iteraciones y Salt aleatorio de 16 bytes.
   - Implementado con la **Web Crypto API nativa** de JavaScript (`window.crypto.subtle`).
 - **Ciclo Completo de Autenticación Academic-Grade:**
-  - **Registro (Sign-Up):** Registro de nuevos usuarios con código de activación administrativo (`admin2026`), validación de duplicados y medidor de fuerza de contraseña. Persistencia en `localStorage`.
-  - **Login:** Verificación de credenciales con hashing local y fallback a archivo `usuarios.json`.
+  - **Registro (Sign-Up):** Registro de nuevos usuarios con código de activación administrativo (`admin2026`), validación de duplicados y medidor de fuerza de contraseña.
+  - **Persistencia Automática:** Toda cuenta registrada se persiste automáticamente en `localStorage` con su salt y hash derivado.
 - **Firma Criptográfica HMAC-SHA256 (Anti-Tampering):**
   - Cada comando enviado desde la interfaz (`INICIO`, `RESET`, `SIM_E1`, `SIM_S1`, etc.) es firmado con una clave HMAC única generada por sesión.
-- **Panel de Administración Modal:** Accesible directamente con el botón **🛡️ Admin** en el Header o pantalla de acceso para crear, ver, eliminar y exportar/importar usuarios en `usuarios.json`.
+- **Panel de Administración Modal:** Accesible directamente con el botón **🛡️ Admin** en el Header o pantalla de acceso para crear, ver y eliminar usuarios en tiempo real.
 
 ---
 
@@ -53,7 +53,8 @@ Automatizacion parcial/
 ├── index.html       ← Aplicación Unificada (Login, Registro, SCADA Dashboard & Modal Admin)
 ├── style.css        ← Estilos Industriales Dark Mode Integrados
 ├── app.js           ← Lógica Completa (Auth PBKDF2, HMAC, Motor Canvas 2D, SCADA & Admin)
-└── README.md        ← Documentación técnica académica
+├── README.md        ← Documentación técnica académica
+└── plan_de_verificacion.txt ← Plan de pruebas
 ```
 
 ---

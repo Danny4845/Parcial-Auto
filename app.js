@@ -660,36 +660,13 @@ function renderAdminTabla() {
   }
 
   setEl('totalUsuarios', USUARIOS_BD.length);
-  const prev = document.getElementById('jsonPreview');
-  if (prev) {
-    const jsonObj = { version: '1.0', usuarios: USUARIOS_BD };
-    prev.textContent = JSON.stringify(jsonObj, null, 2);
-  }
 }
 
 function actualizarSourceLabel() {
-  const lbl = document.getElementById('sourceLabel'), hint = document.getElementById('loginUserHint'), btnD = document.getElementById('btnDemoUsers');
-  if (!lbl) return;
-  if (usandoDemo) {
-    lbl.innerHTML = '<span class="source-dot demo"></span> Usando usuarios de demostración';
-    if (hint) hint.textContent = 'operador1 · ingeniero1 · gerente1';
-    if (btnD) btnD.hidden = true;
-  } else {
-    lbl.innerHTML = `<span class="source-dot loaded"></span> ${USUARIOS_BD.length} usuario(s) cargados`;
-    if (hint) hint.textContent = USUARIOS_BD.map(u => u.nombre).join(' · ');
-    if (btnD) btnD.hidden = false;
+  const hint = document.getElementById('loginUserHint');
+  if (hint) {
+    hint.textContent = USUARIOS_BD.map(u => u.nombre).slice(0, 5).join(' · ');
   }
-}
-
-function cargarUsuariosDesdeJSON(jsonStr) {
-  const data = JSON.parse(jsonStr);
-  if (!data.usuarios || !Array.isArray(data.usuarios)) throw new Error('Formato JSON inválido');
-  for (const u of data.usuarios) {
-    if (!u.nombre || !u.rol || !u.salt || !u.hash) throw new Error('Campo faltante en usuario');
-  }
-  USUARIOS_BD = data.usuarios.map(u => ({ nombre: u.nombre, rol: u.rol, salt: u.salt, hash: u.hash }));
-  usandoDemo = false; actualizarSourceLabel(); renderAdminTabla();
-  log(`Cargados ${USUARIOS_BD.length} usuarios desde JSON`, 'ok');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -841,22 +818,6 @@ function bindEvents() {
     a.click(); URL.revokeObjectURL(a.href); log('Log exportado a CSV', 'info');
   });
 
-  // File loading usuarios.json
-  document.getElementById('fileUsuarios')?.addEventListener('change', e => {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try { cargarUsuariosDesdeJSON(ev.target.result); snack(`✅ Cargados ${USUARIOS_BD.length} usuarios`); }
-      catch (err) { snack(`❌ Error: ${err.message}`); }
-      e.target.value = '';
-    };
-    reader.readAsText(file);
-  });
-
-  document.getElementById('btnDemoUsers')?.addEventListener('click', () => {
-    USUARIOS_BD = [...USUARIOS_DEMO]; usandoDemo = true; actualizarSourceLabel(); snack('↺ Volviendo a usuarios Demo');
-  });
-
   // Admin Modal Trigger
   const modal = document.getElementById('adminModal');
   const openModal = () => { renderAdminTabla(); modal.hidden = false; };
@@ -891,35 +852,6 @@ function bindEvents() {
     } catch (err) { showAdmErr(err.message); }
 
     function showAdmErr(m) { errE.textContent = '⚠️ ' + m; errE.hidden = false; }
-  });
-
-  document.getElementById('btnExportarJson')?.addEventListener('click', () => {
-    const data = JSON.stringify({ version: '1.0', usuarios: USUARIOS_BD }, null, 2);
-    const a = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(new Blob([data], { type: 'application/json' })),
-      download: 'usuarios.json'
-    });
-    a.click(); URL.revokeObjectURL(a.href); snack('⬇️ usuarios.json exportado');
-  });
-
-  document.getElementById('btnImportarJson')?.addEventListener('click', () => {
-    document.getElementById('fileImportJson').click();
-  });
-
-  document.getElementById('fileImportJson')?.addEventListener('change', e => {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try { cargarUsuariosDesdeJSON(ev.target.result); snack('✅ Usuarios importados'); }
-      catch (err) { snack(`❌ Error: ${err.message}`); }
-      e.target.value = '';
-    };
-    reader.readAsText(file);
-  });
-
-  document.getElementById('btnCopyJson')?.addEventListener('click', () => {
-    navigator.clipboard.writeText(JSON.stringify({ version: '1.0', usuarios: USUARIOS_BD }, null, 2))
-      .then(() => snack('📋 JSON copiado al portapapeles'));
   });
 
   window.addEventListener('resize', resizeCanvas);

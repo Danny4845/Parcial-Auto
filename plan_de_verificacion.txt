@@ -6,7 +6,7 @@ Autores: Daniel Colmenares & Hernaldo Pérez Roa
 ================================================================================
 
 --------------------------------------------------------------------------------
-MÓDULO 1: AUTENTICACIÓN & REGISTRO (ACADEMIC-GRADE AUTH)
+MÓDULO 1: AUTENTICACIÓN & REGISTRO (PERSISTENCIA AUTOMÁTICA EN LOCALSTORAGE)
 --------------------------------------------------------------------------------
 
 [ ] Test 1.1: Inicio de Sesión con Usuarios Demo (RBAC)
@@ -29,7 +29,7 @@ MÓDULO 1: AUTENTICACIÓN & REGISTRO (ACADEMIC-GRADE AUTH)
     - Resultado esperado: Se muestra alerta roja "Credenciales incorrectas"
       y el acceso es rechazado. En el log se registra el intento fallido.
 
-[ ] Test 1.3: Registro de Nuevos Usuarios (Sign-Up)
+[ ] Test 1.3: Registro de Nuevos Usuarios (Sign-Up) y Carga Automática
     - En la pantalla de acceso, seleccionar la pestaña "Registrar".
     - Rellenar:
       * Usuario: operador2
@@ -41,28 +41,24 @@ MÓDULO 1: AUTENTICACIÓN & REGISTRO (ACADEMIC-GRADE AUTH)
     - Hacer clic en "Crear Cuenta con PBKDF2".
     - Resultado esperado: Muestra confirmación de cuenta creada, redirige a la
       pestaña de Login con "operador2" pre-escrito e inicia sesión exitosamente.
-      La cuenta persiste en localStorage al recargar el navegador.
+      La cuenta se persiste automáticamente en localStorage al recargar la página.
 
 --------------------------------------------------------------------------------
-MÓDULO 2: PANEL DE ADMINISTRACIÓN DE USUARIOS
+MÓDULO 2: PANEL DE ADMINISTRACIÓN DE USUARIOS (GESTIÓN AUTOMÁTICA EN LOCALSTORAGE)
 --------------------------------------------------------------------------------
 
 [ ] Test 2.1: Apertura del Modal Admin
     - En la barra superior o en la pantalla de inicio, hacer clic en "Admin".
     - Resultado esperado: Se despliega la ventana modal del Panel Admin.
 
-[ ] Test 2.2: Creación y Exportación de usuarios.json
+[ ] Test 2.2: Creación y Persistencia Automática de Usuarios
     - Crear un usuario dentro del modal (ej: "ingeniero2" / "Ingeniero" / "ing2026*").
     - Verificar que aparece en la tabla con su Salt y Hash PBKDF2 en base64.
-    - Revisar el cuadro de vista previa de usuarios.json.
-    - Hacer clic en "Exportar usuarios.json".
-    - Resultado esperado: Se descarga el archivo usuarios.json listo para compartir.
-
-[ ] Test 2.3: Importación de usuarios.json
-    - En la pantalla de inicio de sesión, hacer clic en "Cargar usuarios.json" y
-      seleccionar el archivo descargado.
-    - Resultado esperado: El indicador muestra "N usuario(s) cargados" y se
-      puede iniciar sesión con los usuarios exportados.
+    - Recargar la página en el navegador.
+    - Iniciar sesión con "ingeniero2" / "ing2026*".
+    - Resultado esperado: El usuario se creó y guardó automáticamente en
+      localStorage, permitiendo iniciar sesión de inmediato sin necesidad de
+      exportar ni importar archivos.
 
 --------------------------------------------------------------------------------
 MÓDULO 3: PROCESO INDUSTRIAL & ANIMACIÓN CANVAS 2D

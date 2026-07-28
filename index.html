@@ -55,19 +55,6 @@
           </button>
         </form>
 
-        <div class="auth-sep">— o —</div>
-
-        <!-- Carga de usuarios externos -->
-        <div class="auth-file-section">
-          <div class="file-source-label" id="sourceLabel">
-            <span class="source-dot demo"></span>
-            Usando usuarios de demostración
-          </div>
-          <label class="btn-file-load" for="fileUsuarios">📂 Cargar usuarios.json</label>
-          <input type="file" id="fileUsuarios" accept=".json" style="display:none" />
-          <button id="btnDemoUsers" class="btn-restore-demo" hidden>↺ Demo</button>
-        </div>
-
         <div class="auth-footer">
           <button id="btnOpenAdminFromLogin" class="link-admin-btn">🛡️ Panel Admin</button>
           <span id="loginUserHint" class="user-hint">operador1 · ingeniero1 · gerente1</span>
@@ -393,16 +380,16 @@
           </form>
         </div>
 
-        <!-- LISTA USUARIOS + EXPORTAR (DER) -->
+        <!-- LISTA USUARIOS + ESTADO LOCALSTORAGE (DER) -->
         <div class="modal-col-right">
           <div class="users-toolbar">
             <div class="users-count">
               <span id="totalUsuarios">0</span> usuario(s) registrados
             </div>
             <div class="toolbar-actions">
-              <button id="btnExportarJson" class="btn-export-json">⬇️ Exportar usuarios.json</button>
-              <button id="btnImportarJson" class="btn-import-json">📂 Importar JSON</button>
-              <input type="file" id="fileImportJson" accept=".json" style="display:none" />
+              <span class="sec-badge" style="background:rgba(0,230,118,0.1); border-color:rgba(0,230,118,0.3); color:var(--green)">
+                💾 Guardado en localStorage
+              </span>
             </div>
           </div>
 
@@ -424,14 +411,6 @@
                 </tr>
               </tbody>
             </table>
-          </div>
-
-          <div class="json-preview-box">
-            <div class="preview-header">
-              <span>📄 Vista previa <code>usuarios.json</code></span>
-              <button id="btnCopyJson" class="btn-copy">📋 Copiar</button>
-            </div>
-            <pre id="jsonPreview" class="json-preview">// Los usuarios aparecerán aquí</pre>
           </div>
         </div>
 
