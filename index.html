@@ -15,16 +15,15 @@
   <div id="authOverlay" class="auth-overlay">
     <div class="auth-card">
       <div class="auth-logo">
-        <div class="logo-icon">🏗️</div>
         <h1>SCADA Industrial</h1>
         <p class="auth-subtitle">Control de Acceso — Estacionamiento 100 Plazas</p>
-        <div class="security-badge">🔒 PBKDF2 · SHA-256 · HMAC · RBAC Estricto</div>
+        <div class="security-badge">PBKDF2 · SHA-256 · HMAC · RBAC Estricto</div>
       </div>
 
       <!-- ══ VISTA A: BOOTSTRAP GERENTE (Aparece sólo si NO hay Gerente) ══ -->
       <div id="panelBootstrapGerente" class="tab-panel" hidden>
         <div class="bootstrap-banner">
-          ⚠️ <strong>Configuración Inicial Requerida:</strong><br>
+          <strong>Configuración Inicial Requerida:</strong><br>
           No existe ningún usuario <strong>Gerente</strong> registrado. Debes crear el Gerente Inicial para activar el sistema SCADA.
         </div>
 
@@ -32,17 +31,15 @@
           <div class="field-group">
             <label for="bootNombre">Nombre del Gerente Inicial</label>
             <div class="input-wrapper">
-              <span class="input-icon">👤</span>
-              <input type="text" id="bootNombre" placeholder="ej: gerente1" maxlength="30" spellcheck="false" autocomplete="off" />
+              <input type="text" id="bootNombre" placeholder="" maxlength="30" spellcheck="false" autocomplete="off" />
             </div>
           </div>
 
           <div class="field-group">
             <label for="bootPwd">Contraseña</label>
             <div class="input-wrapper">
-              <span class="input-icon">🔑</span>
-              <input type="password" id="bootPwd" placeholder="mínimo 6 caracteres" autocomplete="new-password" />
-              <button type="button" class="toggle-pwd" id="btnBootEye1">👁</button>
+              <input type="password" id="bootPwd" placeholder="" autocomplete="new-password" />
+              <button type="button" class="toggle-pwd" id="btnBootEye1">Ver</button>
             </div>
             <div class="pwd-strength-bar"><div id="bootStrengthBar" class="pwd-strength-fill"></div></div>
             <span class="field-hint dim" id="bootStrengthLabel"></span>
@@ -51,17 +48,16 @@
           <div class="field-group">
             <label for="bootPwdConf">Confirmar Contraseña</label>
             <div class="input-wrapper">
-              <span class="input-icon">✅</span>
-              <input type="password" id="bootPwdConf" placeholder="repite contraseña" autocomplete="new-password" />
-              <button type="button" class="toggle-pwd" id="btnBootEye2">👁</button>
+              <input type="password" id="bootPwdConf" placeholder="" autocomplete="new-password" />
+              <button type="button" class="toggle-pwd" id="btnBootEye2">Ver</button>
             </div>
           </div>
 
           <div id="bootError" class="auth-error" hidden></div>
           <div id="bootOk"    class="auth-ok"    hidden></div>
 
-          <button type="submit" id="btnCrearGerenteBoot" class="btn-primary btn-green">
-            <span>🔐 Registrar Gerente Inicial (PBKDF2)</span>
+          <button type="submit" id="btnCrearGerenteBoot" class="btn-primary">
+            <span>Registrar Gerente Inicial</span>
           </button>
         </form>
       </div>
@@ -72,24 +68,22 @@
           <div class="field-group">
             <label for="inputUsuario">Nombre de Usuario</label>
             <div class="input-wrapper">
-              <span class="input-icon">👤</span>
-              <input type="text" id="inputUsuario" placeholder="ingresa tu usuario" autocomplete="username" spellcheck="false" />
+              <input type="text" id="inputUsuario" placeholder="" autocomplete="username" spellcheck="false" />
             </div>
           </div>
 
           <div class="field-group">
             <label for="inputPassword">Contraseña</label>
             <div class="input-wrapper">
-              <span class="input-icon">🔑</span>
-              <input type="password" id="inputPassword" placeholder="ingresa tu contraseña" autocomplete="current-password" />
-              <button type="button" id="btnTogglePwd" class="toggle-pwd" title="Mostrar contraseña">👁</button>
+              <input type="password" id="inputPassword" placeholder="" autocomplete="current-password" />
+              <button type="button" id="btnTogglePwd" class="toggle-pwd" title="Mostrar contraseña">Ver</button>
             </div>
           </div>
 
-          <div id="loginError" class="auth-error" hidden>⚠️ Credenciales incorrectas</div>
+          <div id="loginError" class="auth-error" hidden>Credenciales incorrectas</div>
 
           <button type="submit" id="btnLogin" class="btn-primary">
-            <span id="loginBtnText">🔑 Iniciar Sesión</span>
+            <span id="loginBtnText">Iniciar Sesión</span>
             <div id="loginSpinner" class="spinner" hidden></div>
           </button>
         </form>
@@ -106,7 +100,7 @@
     <!-- HEADER SCADA -->
     <header class="app-header">
       <div class="header-left">
-        <div class="logo-badge">🏭 SCADA</div>
+        <div class="logo-badge">SCADA</div>
         <div>
           <h1 class="system-title">Estacionamiento Automatizado</h1>
           <p class="system-sub">III Parcial · Daniel Colmenares & Hernaldo Pérez Roa</p>
@@ -126,14 +120,14 @@
 
       <div class="header-right">
         <div class="user-chip">
-          <div class="user-avatar" id="userAvatar">O</div>
+          <div class="user-avatar" id="userAvatar">U</div>
           <div class="user-info">
-            <span id="displayNombre" class="user-name">usuario</span>
+            <span id="displayNombre" class="user-name">Usuario</span>
             <span id="displayRol" class="user-rol rol-badge">Rol</span>
           </div>
         </div>
-        <button id="btnOpenCrearUsuario" class="btn-admin-nav" hidden>➕ Crear Usuario</button>
-        <button id="btnLogout" class="btn-logout" title="Cerrar Sesión">🚪</button>
+        <button id="btnOpenCrearUsuario" class="btn-admin-nav" hidden>Crear Usuario</button>
+        <button id="btnLogout" class="btn-logout">Cerrar Sesión</button>
       </div>
     </header>
 
@@ -146,7 +140,6 @@
         <!-- CARD 1: ESTADO PLAZAS -->
         <div class="scada-card">
           <div class="card-header">
-            <span class="card-icon">🅿️</span>
             <span>Capacidad del Garaje</span>
             <span class="badge-total">100 Max</span>
           </div>
@@ -166,29 +159,25 @@
         <!-- CARD 2: MANDOS OPERATIVOS -->
         <div class="scada-card">
           <div class="card-header">
-            <span class="card-icon">🎮</span>
             <span>Mandos de Control</span>
           </div>
           <div class="control-grid">
             <button id="btnInicio" class="btn-ctrl btn-start">
-              <span>▶ INICIO</span>
-              <small>Activar Ciclo SP</small>
+              <span>INICIO</span>
             </button>
             <button id="btnReset" class="btn-ctrl btn-reset">
-              <span>↺ RESET (CI)</span>
-              <small>Condiciones Iniciales</small>
+              <span>RESET (CI)</span>
             </button>
           </div>
           <div class="sim-grid">
-            <button id="btnSimE1" class="btn-ctrl btn-sim">🚗 Entrada (E1)</button>
-            <button id="btnSimS1" class="btn-ctrl btn-sim">🚗 Salida (S1)</button>
+            <button id="btnSimE1" class="btn-ctrl btn-sim">Entrada (E1)</button>
+            <button id="btnSimS1" class="btn-ctrl btn-sim">Salida (S1)</button>
           </div>
         </div>
 
         <!-- CARD 3: TEMPORIZADOR S.P. -->
         <div class="scada-card">
           <div class="card-header">
-            <span class="card-icon">⏱️</span>
             <span>Semáforo Peatonal (SP)</span>
           </div>
           <div class="timer-display">
@@ -203,11 +192,10 @@
         <!-- CARD 4: PANEL SUPERVISOR / INGENIERO -->
         <div id="panelIngeniero" class="scada-card card-engineer" hidden>
           <div class="card-header">
-            <span class="card-icon">🔧</span>
             <span>Panel del Supervisor</span>
           </div>
           <div class="eng-controls">
-            <button id="btnForzarPorton" class="btn-ctrl btn-warn">🚧 Forzar Abrir/Cerrar Portón</button>
+            <button id="btnForzarPorton" class="btn-ctrl btn-warn">Forzar Abrir/Cerrar Portón</button>
             <div class="time-adjust">
               <label>Tiempo Verde SP (s):</label>
               <input type="number" id="inputTiempoVerde" value="20" min="5" max="120" />
@@ -216,7 +204,7 @@
               <label>Tiempo Rojo SP (s):</label>
               <input type="number" id="inputTiempoRojo" value="40" min="10" max="300" />
             </div>
-            <button id="btnAplicarTiempos" class="btn-ctrl btn-apply">⚙️ Aplicar Tiempos SP</button>
+            <button id="btnAplicarTiempos" class="btn-ctrl btn-apply">Aplicar Tiempos SP</button>
           </div>
         </div>
 
@@ -234,7 +222,6 @@
           <!-- GERENTE METRICS -->
           <div id="panelGerente" class="scada-card card-metrics" hidden>
             <div class="card-header">
-              <span class="card-icon">📊</span>
               <span>Métricas Gerenciales (ERP)</span>
             </div>
             <div class="metrics-grid">
@@ -260,9 +247,8 @@
           <!-- AUDIT LOG -->
           <div id="panelLog" class="scada-card card-log" hidden>
             <div class="card-header">
-              <span class="card-icon">📋</span>
               <span>Log de Auditoría & Ciberseguridad</span>
-              <button id="btnExportLog" class="btn-export-log">📥 Exportar CSV</button>
+              <button id="btnExportLog" class="btn-export-log">Exportar CSV</button>
             </div>
             <div id="auditLog" class="audit-log"></div>
           </div>
@@ -280,10 +266,10 @@
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title">
-          <span>➕ Crear Nuevo Usuario</span>
+          <span>Crear Nuevo Usuario</span>
           <span class="sec-badge" id="modalSecBadge">Jerarquía por Rol</span>
         </div>
-        <button id="btnCloseAdminModal" class="btn-close-modal">✕ Cerrar</button>
+        <button id="btnCloseAdminModal" class="btn-close-modal">Cerrar</button>
       </div>
 
       <div class="modal-body">
@@ -294,15 +280,13 @@
             <div class="field-group">
               <label for="admNombre">Nombre de usuario</label>
               <div class="input-wrapper">
-                <span class="input-icon">👤</span>
-                <input type="text" id="admNombre" placeholder="ej: operador2" maxlength="30" autocomplete="off" />
+                <input type="text" id="admNombre" placeholder="" maxlength="30" autocomplete="off" />
               </div>
             </div>
 
             <div class="field-group">
               <label for="admRol">Rol a Asignar</label>
               <div class="input-wrapper">
-                <span class="input-icon">🏷️</span>
                 <select id="admRol">
                   <!-- Se llena dinámicamente según el rol activo -->
                 </select>
@@ -313,9 +297,8 @@
             <div class="field-group">
               <label for="admPwd">Contraseña</label>
               <div class="input-wrapper">
-                <span class="input-icon">🔑</span>
-                <input type="password" id="admPwd" placeholder="mínimo 6 caracteres" autocomplete="new-password" />
-                <button type="button" class="toggle-pwd" id="btnAdmEye1">👁</button>
+                <input type="password" id="admPwd" placeholder="" autocomplete="new-password" />
+                <button type="button" class="toggle-pwd" id="btnAdmEye1">Ver</button>
               </div>
               <div class="pwd-strength-bar"><div id="admStrengthBar" class="pwd-strength-fill"></div></div>
               <span class="field-hint dim" id="admStrengthLabel"></span>
@@ -324,9 +307,8 @@
             <div class="field-group">
               <label for="admPwdConf">Confirmar contraseña</label>
               <div class="input-wrapper">
-                <span class="input-icon">✅</span>
-                <input type="password" id="admPwdConf" placeholder="repite contraseña" autocomplete="new-password" />
-                <button type="button" class="toggle-pwd" id="btnAdmEye2">👁</button>
+                <input type="password" id="admPwdConf" placeholder="" autocomplete="new-password" />
+                <button type="button" class="toggle-pwd" id="btnAdmEye2">Ver</button>
               </div>
             </div>
 
@@ -334,7 +316,7 @@
             <div id="admOk"    class="auth-ok"    hidden></div>
 
             <button type="submit" id="btnAdmCrear" class="btn-primary">
-              <span id="admBtnTxt">🔐 Generar Hash PBKDF2</span>
+              <span id="admBtnTxt">Generar Hash PBKDF2</span>
               <div id="admSpinner" class="spinner" hidden></div>
             </button>
           </form>
@@ -347,8 +329,8 @@
               <span id="totalUsuarios">0</span> usuario(s) registrados
             </div>
             <div class="toolbar-actions">
-              <span class="sec-badge" style="background:rgba(0,230,118,0.1); border-color:rgba(0,230,118,0.3); color:var(--green)">
-                💾 Guardado en localStorage
+              <span class="sec-badge">
+                Guardado en localStorage
               </span>
             </div>
           </div>
@@ -377,7 +359,7 @@
       </div>
 
       <div class="modal-footer-bar">
-        <button id="btnReturnToLogin" class="btn-return-login">⬅️ Volver al SCADA</button>
+        <button id="btnReturnToLogin" class="btn-return-login">Volver al SCADA</button>
       </div>
     </div>
   </div>

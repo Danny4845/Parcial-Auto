@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════════
    SCADA — Estacionamiento Automatizado · III Parcial
-   app.js — Jerarquía RBAC Estricta & PBKDF2 (Gerente -> Supervisor -> Operador)
+   app.js — Jerarquía RBAC Estricta & PBKDF2 (Negro & Turquesa Claro)
    Equipo: Daniel Colmenares & Hernaldo Pérez Roa
    ══════════════════════════════════════════════════════════════════ */
 
@@ -9,7 +9,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    1. USUARIOS Y PERSISTENCIA (SIN USUARIOS HARDECODEADOS)
    ═══════════════════════════════════════════════════════════════════ */
-const USUARIOS_DEMO = []; // Sin usuarios de prueba hardcodeados
+const USUARIOS_DEMO = [];
 let USUARIOS_BD = [];
 const LS_KEY = 'scada_usuarios_registrados';
 
@@ -100,11 +100,11 @@ function evaluarFuerza(pwd) {
   if (/[A-Z]/.test(pwd)) s++; if (/[0-9]/.test(pwd)) s++; if (/[^A-Za-z0-9]/.test(pwd)) s++;
   const niveles = [
     { pct: 0, color: 'transparent', label: '' },
-    { pct: 20, color: '#ff1744', label: 'Muy débil' },
-    { pct: 40, color: '#ff6d00', label: 'Débil' },
-    { pct: 60, color: '#ffd740', label: 'Aceptable' },
-    { pct: 80, color: '#69f0ae', label: 'Fuerte' },
-    { pct: 100, color: '#00e676', label: 'Muy fuerte ✅' }
+    { pct: 20, color: '#35524d', label: 'Muy débil' },
+    { pct: 40, color: '#289988', label: 'Débil' },
+    { pct: 60, color: '#3dbda9', label: 'Aceptable' },
+    { pct: 80, color: '#4cd6c0', label: 'Fuerte' },
+    { pct: 100, color: '#70e7d7', label: 'Muy fuerte' }
   ];
   return niveles[Math.min(s, 5)];
 }
@@ -156,7 +156,7 @@ const PERMISOS = {
 function puedeDo(accion) { return sesion && (PERMISOS[sesion.rol] || []).includes(accion); }
 
 /* ═══════════════════════════════════════════════════════════════════
-   4. CANVAS SCADA (Dibujo cenital)
+   4. CANVAS SCADA (Dibujo cenital — Negro & Turquesa Claro)
    ═══════════════════════════════════════════════════════════════════ */
 const canvas = document.getElementById('scadaCanvas');
 const ctx    = canvas.getContext('2d');
@@ -177,25 +177,25 @@ function drawScene() {
   const cwX = gW, cwW = W * 0.22, cwX2 = cwX + cwW;
   const entY = H * 0.36, salY = H * 0.64, lH = H * 0.13;
 
-  ctx.fillStyle = '#0e1420'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#080d18'; ctx.fillRect(0, 0, gW, H);
+  ctx.fillStyle = '#090d14'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#040609'; ctx.fillRect(0, 0, gW, H);
 
-  ctx.strokeStyle = '#ff8c00'; ctx.lineWidth = 3;
+  ctx.strokeStyle = '#4cd6c0'; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(gW, 0); ctx.lineTo(gW, H); ctx.stroke();
   ctx.strokeRect(1.5, 1.5, gW - 1.5, H - 3); ctx.lineWidth = 1;
 
   drawParkingGrid(gW, H);
 
-  ctx.fillStyle = '#ff8c0055'; ctx.font = `bold ${Math.floor(W * 0.022)}px system-ui`;
+  ctx.fillStyle = '#4cd6c044'; ctx.font = `bold ${Math.floor(W * 0.022)}px system-ui`;
   ctx.textAlign = 'center'; ctx.fillText('100 PLAZAS', gW / 2, H / 2);
 
-  drawCarril(0, entY, gW, lH, '#1a2d44', '← ENTRADA', '#448aff40', 'left');
-  drawCarril(0, salY, gW, lH, '#1a2d35', 'SALIDA →',  '#ff910040', 'right');
+  drawCarril(0, entY, gW, lH, '#0e1822', '← ENTRADA', '#4cd6c066', 'left');
+  drawCarril(0, salY, gW, lH, '#0e1822', 'SALIDA →',  '#4cd6c066', 'right');
 
-  ctx.fillStyle = '#1e2840'; ctx.fillRect(cwX2, 0, W - cwX2, H);
+  ctx.fillStyle = '#0f1622'; ctx.fillRect(cwX2, 0, W - cwX2, H);
 
-  drawDiagonalLane(cwX2, entY, W, H * 0.08, lH, '#1a2d44', '← ENTRADA', '#448aff30');
-  drawDiagonalLane(cwX2, salY, W, H * 0.92, lH, '#1a2d35', 'SALIDA →',  '#ff910030');
+  drawDiagonalLane(cwX2, entY, W, H * 0.08, lH, '#0e1822', '← ENTRADA', '#4cd6c044');
+  drawDiagonalLane(cwX2, salY, W, H * 0.92, lH, '#0e1822', 'SALIDA →',  '#4cd6c044');
 
   drawCrosswalk(cwX, entY - lH / 2, cwW, lH + (salY - entY) + lH);
   drawPorton(cwX, entY - lH / 2, cwW, lH + (salY - entY) + lH);
@@ -209,14 +209,14 @@ function drawScene() {
   const s1x = gW * 0.82, s1y = salY;
   const s2x = cwX2 + (W - cwX2) * 0.55, s2y = salY;
 
-  drawSensor(e1x, e1y, 'E1', EST.E1, '#448aff');
-  drawSensor(e2x, e2y, 'E2', EST.E2, '#448aff');
-  drawSensor(s1x, s1y, 'S1', EST.S1, '#ff9100');
-  drawSensor(s2x, s2y, 'S2', EST.S2, '#ff9100');
+  drawSensor(e1x, e1y, 'E1', EST.E1, '#4cd6c0');
+  drawSensor(e2x, e2y, 'E2', EST.E2, '#4cd6c0');
+  drawSensor(s1x, s1y, 'S1', EST.S1, '#4cd6c0');
+  drawSensor(s2x, s2y, 'S2', EST.S2, '#4cd6c0');
 
   ctx.font = `bold ${Math.floor(W * 0.016)}px monospace`; ctx.textAlign = 'left';
-  ctx.fillStyle = EST.FCA ? '#00e676' : '#2a3f5e'; ctx.fillText('FCA', cwX + 4, entY - lH / 2 - 5);
-  ctx.fillStyle = EST.FCC ? '#00e676' : '#2a3f5e'; ctx.fillText('FCC', cwX + 4, salY + lH / 2 + 14);
+  ctx.fillStyle = EST.FCA ? '#4cd6c0' : '#203834'; ctx.fillText('FCA', cwX + 4, entY - lH / 2 - 5);
+  ctx.fillStyle = EST.FCC ? '#4cd6c0' : '#203834'; ctx.fillText('FCC', cwX + 4, salY + lH / 2 + 14);
 
   for (const v of EST.vehiculos) drawVehiculo(v);
   drawPaIndicator(W, H);
@@ -236,12 +236,12 @@ function drawParkingGrid(gW, H) {
       for (let c = 0; c < cols; c++) {
         const x = margin + c * (spotW + 4), y = startY + r * (spotH + 4);
         const ocu = idx < EST.plazasOcupadas;
-        ctx.fillStyle   = ocu ? '#ff17441a' : '#0d1a2a';
-        ctx.strokeStyle = ocu ? '#ff174455' : '#1e2d40';
+        ctx.fillStyle   = ocu ? 'rgba(76, 214, 192, 0.25)' : '#070c14';
+        ctx.strokeStyle = ocu ? '#4cd6c0' : '#152220';
         roundRect(ctx, x, y, spotW, spotH, 3); ctx.fill(); ctx.stroke();
         if (ocu) {
-          ctx.fillStyle = '#ff444466';
-          roundRect(ctx, x + spotW * 0.1, y + spotH * 0.15, spotW * 0.8, spotH * 0.7, 2); ctx.fill();
+          ctx.fillStyle = '#4cd6c0';
+          roundRect(ctx, x + spotW * 0.15, y + spotH * 0.2, spotW * 0.7, spotH * 0.6, 2); ctx.fill();
         }
         idx++;
       }
@@ -266,92 +266,87 @@ function drawDiagonalLane(startX, startY, endX, endY, lH, fillColor, label, labe
 }
 
 function drawCrosswalk(x, y, w, h) {
-  ctx.fillStyle = '#151f30'; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#0c141d'; ctx.fillRect(x, y, w, h);
   const stripeH = h / 13, active = EST.semPeatonal === 'verde';
   for (let i = 0; i < 7; i++) {
-    ctx.fillStyle = active ? '#e8f0fe18' : '#e8f0fe0e';
+    ctx.fillStyle = active ? '#4cd6c033' : '#152220';
     ctx.fillRect(x + w * 0.08, y + i * stripeH * 2, w * 0.84, stripeH);
   }
-  ctx.strokeStyle = '#2a3f5e'; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
+  ctx.strokeStyle = '#203834'; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
 }
 
 function drawPorton(x, y, w, h) {
   const barCount = 6;
   let apertura = EST.portonEstado === 'abierto' ? 1 : (EST.portonEstado === 'abriendo' || EST.portonEstado === 'cerrando') ? 0.55 : 0;
-  const color = EST.portonEstado === 'cerrado' ? '#ff1744' : EST.portonEstado === 'abierto' ? '#00e676' : '#ffd740';
+  const color = '#4cd6c0';
 
-  ctx.fillStyle = '#2a3f5e';
+  ctx.fillStyle = '#152220';
   ctx.fillRect(x + w * 0.1, y, w * 0.05, h); ctx.fillRect(x + w * 0.85, y, w * 0.05, h);
 
   const barW = (w * 0.65) / barCount, barStartX = x + w * 0.175, barH = h * (1 - apertura);
   for (let i = 0; i < barCount; i++) {
-    ctx.fillStyle = color + 'cc'; ctx.shadowColor = color; ctx.shadowBlur = 6;
+    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 4;
     roundRect(ctx, barStartX + i * barW, y, barW * 0.65, barH, 2); ctx.fill(); ctx.shadowBlur = 0;
   }
-
-  ctx.font = `bold ${Math.floor(w * 0.14)}px system-ui`; ctx.textAlign = 'center'; ctx.fillStyle = color;
-  const estado = { cerrado: '🔒', abriendo: '⬆', abierto: '✓', cerrando: '⬇' };
-  ctx.fillText(estado[EST.portonEstado], x + w / 2, y + h / 2);
 }
 
 function drawTrafficLight(x, y, label, estado, hasAzul) {
   const R = canvas.width * 0.020, pad = R * 0.6;
   const lights = hasAzul
-    ? [{ color: '#ff1744', on: estado === 'rojo' }, { color: '#00e676', on: estado === 'verde' }, { color: '#448aff', on: estado === 'azul' }]
-    : [{ color: '#ff1744', on: estado === 'rojo' }, { color: '#00e676', on: estado === 'verde' }];
+    ? [{ color: '#35524d', on: estado === 'rojo' }, { color: '#4cd6c0', on: estado === 'verde' }, { color: '#70e7d7', on: estado === 'azul' }]
+    : [{ color: '#35524d', on: estado === 'rojo' }, { color: '#4cd6c0', on: estado === 'verde' }];
 
   const bH = pad * 2 + lights.length * R * 2 + (lights.length - 1) * pad, bW = R * 2 + pad * 2;
 
-  ctx.fillStyle = '#111b2e'; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.fill();
-  ctx.strokeStyle = '#2a3f5e'; ctx.lineWidth = 1.5; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.stroke();
+  ctx.fillStyle = '#090d14'; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.fill();
+  ctx.strokeStyle = '#203834'; ctx.lineWidth = 1.5; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.stroke();
 
   lights.forEach((l, i) => {
     const ly = y + pad + i * (R * 2 + pad) + R;
     ctx.beginPath(); ctx.arc(x, ly, R, 0, Math.PI * 2);
-    ctx.fillStyle = l.on ? l.color : l.color + '22';
-    if (l.on) { ctx.shadowColor = l.color; ctx.shadowBlur = 14; }
+    ctx.fillStyle = l.on ? l.color : '#131b29';
+    if (l.on) { ctx.shadowColor = l.color; ctx.shadowBlur = 8; }
     ctx.fill(); ctx.shadowBlur = 0;
   });
 
-  ctx.font = `bold ${Math.floor(R * 0.9)}px system-ui`; ctx.fillStyle = '#8eacc8'; ctx.textAlign = 'center';
+  ctx.font = `bold ${Math.floor(R * 0.9)}px system-ui`; ctx.fillStyle = '#80b3ad'; ctx.textAlign = 'center';
   ctx.fillText(label, x, y + bH + R * 0.9);
 }
 
 function drawSensor(x, y, label, activo, color) {
   const R = canvas.width * 0.013;
   ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2);
-  ctx.fillStyle = activo ? color + 'bb' : color + '22';
-  if (activo) { ctx.shadowColor = color; ctx.shadowBlur = 14; }
+  ctx.fillStyle = activo ? color : '#131b29';
+  if (activo) { ctx.shadowColor = color; ctx.shadowBlur = 8; }
   ctx.fill(); ctx.shadowBlur = 0;
-  ctx.strokeStyle = activo ? color : '#2a3f5e'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.font = `bold ${Math.floor(R * 1.1)}px system-ui`; ctx.fillStyle = activo ? color : '#4a6080'; ctx.textAlign = 'center';
+  ctx.strokeStyle = activo ? color : '#203834'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.font = `bold ${Math.floor(R * 1.1)}px system-ui`; ctx.fillStyle = activo ? color : '#40706b'; ctx.textAlign = 'center';
   ctx.fillText(label, x, y - R - 4);
 }
 
 function drawPaIndicator(W, H) {
   const x = W * 0.37, y = H * 0.52, w = W * 0.19;
-  ctx.fillStyle = EST.paActivo ? 'rgba(0,230,118,0.15)' : 'rgba(255,23,68,0.1)';
-  ctx.strokeStyle = EST.paActivo ? '#00e67660' : '#ff174440';
+  ctx.fillStyle = EST.paActivo ? 'rgba(76,214,192,0.15)' : 'rgba(25,35,32,0.6)';
+  ctx.strokeStyle = EST.paActivo ? '#4cd6c0' : '#203834';
   roundRect(ctx, x, y, w, H * 0.06, 4); ctx.fill(); ctx.stroke();
-  ctx.font = `bold ${Math.floor(W * 0.014)}px system-ui`; ctx.fillStyle = EST.paActivo ? '#00e676' : '#ff1744';
+  ctx.font = `bold ${Math.floor(W * 0.014)}px system-ui`; ctx.fillStyle = EST.paActivo ? '#4cd6c0' : '#40706b';
   ctx.textAlign = 'center'; ctx.fillText(EST.paActivo ? 'PA ACTIVO' : 'PA INACTIVO', x + w / 2, y + H * 0.038);
 }
 
 function drawCounter(W, H) {
   const cW = W * 0.20, cH = H * 0.07, x = W - cW - 10, y = H - cH - 10;
-  ctx.fillStyle = 'rgba(8,12,20,0.88)'; roundRect(ctx, x, y, cW, cH, 6); ctx.fill();
-  ctx.strokeStyle = '#2a3f5e'; ctx.lineWidth = 1; roundRect(ctx, x, y, cW, cH, 6); ctx.stroke();
+  ctx.fillStyle = 'rgba(9,13,20,0.92)'; roundRect(ctx, x, y, cW, cH, 6); ctx.fill();
+  ctx.strokeStyle = '#203834'; ctx.lineWidth = 1; roundRect(ctx, x, y, cW, cH, 6); ctx.stroke();
   const libre = 100 - EST.plazasOcupadas;
-  const color = libre > 20 ? '#00e5ff' : libre > 5 ? '#ffd740' : '#ff1744';
-  ctx.font = `bold ${Math.floor(cH * 0.48)}px monospace`; ctx.fillStyle = color; ctx.textAlign = 'center';
+  ctx.font = `bold ${Math.floor(cH * 0.48)}px monospace`; ctx.fillStyle = '#4cd6c0'; ctx.textAlign = 'center';
   ctx.fillText(`${libre} LIBRES`, x + cW / 2, y + cH * 0.68);
 }
 
 function drawVehiculo(v) {
   const vW = canvas.width * 0.06, vH = canvas.height * 0.05;
   ctx.save(); ctx.translate(v.x, v.y);
-  ctx.fillStyle = v.color; roundRect(ctx, -vW / 2, -vH / 2, vW, vH, 4); ctx.fill();
-  ctx.fillStyle = 'rgba(0,229,255,0.25)'; roundRect(ctx, -vW * 0.22, -vH * 0.26, vW * 0.44, vH * 0.36, 2); ctx.fill();
+  ctx.fillStyle = '#4cd6c0'; roundRect(ctx, -vW / 2, -vH / 2, vW, vH, 4); ctx.fill();
+  ctx.fillStyle = '#090d14'; roundRect(ctx, -vW * 0.22, -vH * 0.26, vW * 0.44, vH * 0.36, 2); ctx.fill();
   ctx.restore();
 }
 
@@ -365,15 +360,13 @@ function roundRect(ctx, x, y, w, h, r) {
 /* ═══════════════════════════════════════════════════════════════════
    5. LÓGICA DE SIMULACIÓN & PROCESO
    ═══════════════════════════════════════════════════════════════════ */
-const COLORES_CARRO = ['#4488ff','#ff6644','#44dd88','#ffcc44','#cc44ff','#00e5ff'];
-
 function crearVehiculoEntrada() {
   const W = canvas.width, H = canvas.height;
-  return { id: crypto.randomUUID(), tipo: 'entrada', x: W * 0.96, y: H * 0.36, color: COLORES_CARRO[Math.floor(Math.random()*COLORES_CARRO.length)], fase: 'llegando', speed: 2.2 };
+  return { id: crypto.randomUUID(), tipo: 'entrada', x: W * 0.96, y: H * 0.36, color: '#4cd6c0', fase: 'llegando', speed: 2.2 };
 }
 function crearVehiculoSalida() {
   const W = canvas.width, H = canvas.height;
-  return { id: crypto.randomUUID(), tipo: 'salida', x: W * 0.20, y: H * 0.64, color: COLORES_CARRO[Math.floor(Math.random()*COLORES_CARRO.length)], fase: 'esperandoVerde', speed: 2.2 };
+  return { id: crypto.randomUUID(), tipo: 'salida', x: W * 0.20, y: H * 0.64, color: '#4cd6c0', fase: 'esperandoVerde', speed: 2.2 };
 }
 
 function updateVehiculos() {
@@ -423,7 +416,7 @@ function setFaseSP(fase) {
       const paDuration = duracion - 4000 - 6000;
       EST._paOffTimer = setTimeout(() => {
         EST.paActivo = false; actualizarUI();
-        log('Ventana PA cerrada (6s previas a SP→verde)', 'warn');
+        log('Ventana PA cerrada (6s previas a SP->verde)', 'warn');
         if (EST.portonEstado === 'abierto') cerrarPorton();
       }, Math.max(paDuration, 1000));
     }, 4000);
@@ -446,7 +439,7 @@ function setFaseSP(fase) {
   }, duracion);
 
   actualizarUI();
-  log(`Semáforo peatonal → ${fase.toUpperCase()} (${duracion / 1000}s)`, 'info');
+  log(`Semáforo peatonal -> ${fase.toUpperCase()} (${duracion / 1000}s)`, 'info');
 }
 
 function procesarDemandas() {
@@ -480,7 +473,7 @@ function abrirPorton() {
       const v = EST.vehiculos.find(v => v.tipo === 'salida' && v.fase === 'esperandoVerde');
       if (v) v.fase = 'saliendo';
     }
-    actualizarUI(); log('FCA activado — portón abierto', 'ok');
+    actualizarUI(); log('FCA activado - portón abierto', 'ok');
   }, 1600);
 }
 
@@ -491,7 +484,7 @@ function cerrarPorton() {
     EST.portonEstado = 'cerrado'; EST.FCC = true;
     EST.semEntrada = (EST.sistemaActivo && EST.plazasOcupadas < 100) ? 'azul' : 'rojo';
     EST.semSalida = 'rojo'; EST.portonParaEntrada = false; EST.portonParaSalida = false;
-    actualizarUI(); log('FCC activado — portón cerrado', 'info');
+    actualizarUI(); log('FCC activado - portón cerrado', 'info');
     setTimeout(procesarDemandas, 300);
   }, 1600);
 }
@@ -527,7 +520,7 @@ function resetSistema() {
   });
 
   actualizarUI(); updateTimerUI('—', 0, 1);
-  log('Sistema → Condiciones Iniciales (CI)', 'warn');
+  log('Sistema -> Condiciones Iniciales (CI)', 'warn');
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -541,7 +534,7 @@ function actualizarUI() {
     disp.className = 'plaza-counter' + (libres <= 5 ? ' critical' : libres <= 20 ? ' warning' : '');
   }
   const bar = document.getElementById('plazaBarFill');
-  if (bar) { bar.style.width = pct + '%'; bar.style.backgroundColor = libres <= 5 ? '#ff1744' : libres <= 20 ? '#ffd740' : '#00e676'; }
+  if (bar) { bar.style.width = pct + '%'; bar.style.backgroundColor = '#4cd6c0'; }
   setEl('plazaPct', `${pct}% ocupado`);
 
   const ss = document.getElementById('systemStatus');
@@ -601,7 +594,7 @@ function aplicarRBAC() {
   // Botón de Crear Usuario en Header
   const btnCrear = document.getElementById('btnOpenCrearUsuario');
   if (btnCrear) {
-    btnCrear.hidden = esOperador; // Operador NO puede crear usuarios
+    btnCrear.hidden = esOperador;
   }
 
   const av = document.getElementById('userAvatar'); if (av) av.textContent = (sesion?.nombre?.[0] ?? '?').toUpperCase();
@@ -660,11 +653,9 @@ function verificarPantallaInicial() {
   if (adminModal)  adminModal.hidden = true;
 
   if (!existeGerente()) {
-    // Si NO hay Gerente -> Mostrar Setup Inicial del Gerente
     if (panelBoot)  panelBoot.hidden  = false;
     if (panelLogin) panelLogin.hidden = true;
   } else {
-    // Si YA hay Gerente -> Mostrar ÚNICAMENTE el Iniciar Sesión
     if (panelBoot)  panelBoot.hidden  = true;
     if (panelLogin) panelLogin.hidden = false;
   }
@@ -690,7 +681,7 @@ function renderAdminTabla() {
         <td><span class="user-rol rol-badge rol-${u.rol}">${u.rol}</span></td>
         <td class="mono" title="${u.salt}">${u.salt.slice(0,10)}…</td>
         <td class="mono" title="${u.hash}">${u.hash.slice(0,14)}…</td>
-        <td><button class="btn-del" data-nombre="${u.nombre}">🗑</button></td>
+        <td><button class="btn-del" data-nombre="${u.nombre}">Eliminar</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -728,32 +719,32 @@ function bindEvents() {
     bootErr.hidden = true; bootOk.hidden = true;
 
     if (!nombre || !/^[a-z0-9_]{3,30}$/i.test(nombre)) {
-      bootErr.textContent = '⚠️ Nombre inválido (3–30 caracteres, letras/números/_)';
+      bootErr.textContent = 'Nombre inválido (3-30 caracteres, letras/números/_)';
       bootErr.hidden = false; return;
     }
     if (pwd.length < 6) {
-      bootErr.textContent = '⚠️ La contraseña debe tener al menos 6 caracteres';
+      bootErr.textContent = 'La contraseña debe tener al menos 6 caracteres';
       bootErr.hidden = false; return;
     }
     if (pwd !== conf) {
-      bootErr.textContent = '⚠️ Las contraseñas no coinciden';
+      bootErr.textContent = 'Las contraseñas no coinciden';
       bootErr.hidden = false; return;
     }
 
     try {
       const u = await registrarUsuario(nombre, 'Gerente', pwd);
       log(`Gerente Inicial creado: ${u.nombre}`, 'ok');
-      bootOk.textContent = `✅ Gerente Inicial "${u.nombre}" creado exitosamente. Ahora inicia sesión.`;
+      bootOk.textContent = `Gerente Inicial "${u.nombre}" creado exitosamente. Ahora inicia sesión.`;
       bootOk.hidden = false;
 
       setTimeout(() => {
         verificarPantallaInicial();
         document.getElementById('inputUsuario').value = u.nombre;
         document.getElementById('inputPassword').focus();
-        snack(`✅ Gerente "${u.nombre}" registrado. Inicia sesión.`);
+        snack(`Gerente "${u.nombre}" registrado. Inicia sesión.`);
       }, 1500);
     } catch (err) {
-      bootErr.textContent = '⚠️ ' + err.message; bootErr.hidden = false;
+      bootErr.textContent = err.message; bootErr.hidden = false;
     }
   });
 
@@ -783,20 +774,20 @@ function bindEvents() {
     const spin   = document.getElementById('loginSpinner');
 
     if (!usr) {
-      errEl.textContent = '⚠️ Ingresa tu nombre de usuario';
+      errEl.textContent = 'Ingresa tu nombre de usuario';
       errEl.hidden = false; return;
     }
     if (!pwd) {
-      errEl.textContent = '⚠️ Ingresa tu contraseña';
+      errEl.textContent = 'Ingresa tu contraseña';
       errEl.hidden = false; return;
     }
 
     errEl.hidden = true; btnTxt.textContent = 'Verificando…'; spin.hidden = false;
     const u = await autenticar(usr, pwd);
-    spin.hidden = true; btnTxt.textContent = '🔑 Iniciar Sesión';
+    spin.hidden = true; btnTxt.textContent = 'Iniciar Sesión';
 
     if (!u) {
-      errEl.textContent = '⚠️ Credenciales incorrectas';
+      errEl.textContent = 'Credenciales incorrectas';
       errEl.hidden = false;
       document.getElementById('inputPassword').value = '';
       log(`Login fallido: "${usr}"`, 'error');
@@ -816,32 +807,32 @@ function bindEvents() {
   document.getElementById('btnInicio')?.addEventListener('click', async () => {
     if (!puedeDo('inicio')) return;
     const { payload, firma } = await signCommand('INICIO');
-    if (!await verifyCommand(payload, firma)) { snack('❌ Firma HMAC inválida'); return; }
+    if (!await verifyCommand(payload, firma)) { snack('Firma HMAC inválida'); return; }
     EST.sistemaActivo = true; EST.semEntrada = 'azul'; iniciarCicloSP(); actualizarUI();
-    snack('▶ Sistema iniciado — ciclo SP activo'); log('Sistema iniciado', 'ok');
+    snack('Sistema iniciado - ciclo SP activo'); log('Sistema iniciado', 'ok');
   });
 
   document.getElementById('btnReset')?.addEventListener('click', async () => {
     if (!puedeDo('reset')) return;
     const { payload, firma } = await signCommand('RESET');
-    if (!await verifyCommand(payload, firma)) { snack('❌ Firma HMAC inválida'); return; }
-    resetSistema(); snack('↺ Sistema en Condiciones Iniciales');
+    if (!await verifyCommand(payload, firma)) { snack('Firma HMAC inválida'); return; }
+    resetSistema(); snack('Sistema en Condiciones Iniciales');
   });
 
   document.getElementById('btnSimE1')?.addEventListener('click', async () => {
     if (!puedeDo('simE1') || !EST.sistemaActivo) return;
-    if (EST.plazasOcupadas >= 100) { snack('🅿️ Estacionamiento lleno'); return; }
+    if (EST.plazasOcupadas >= 100) { snack('Estacionamiento lleno'); return; }
     const { payload, firma } = await signCommand('SIM_E1');
-    if (!await verifyCommand(payload, firma)) { snack('❌ Firma HMAC inválida'); return; }
-    EST.vehiculos.push(crearVehiculoEntrada()); snack('🚗 Vehículo ingresando (E1)'); log('Simulación: vehículo en entrada', 'info');
+    if (!await verifyCommand(payload, firma)) { snack('Firma HMAC inválida'); return; }
+    EST.vehiculos.push(crearVehiculoEntrada()); snack('Vehículo ingresando (E1)'); log('Simulación: vehículo en entrada', 'info');
   });
 
   document.getElementById('btnSimS1')?.addEventListener('click', async () => {
     if (!puedeDo('simS1') || !EST.sistemaActivo) return;
-    if (EST.plazasOcupadas === 0) { snack('🅿️ Garaje vacío'); return; }
+    if (EST.plazasOcupadas === 0) { snack('Garaje vacío'); return; }
     const { payload, firma } = await signCommand('SIM_S1');
-    if (!await verifyCommand(payload, firma)) { snack('❌ Firma HMAC inválida'); return; }
-    EST.vehiculos.push(crearVehiculoSalida()); activarSensor('S1'); snack('🚗 Vehículo demandando salida (S1)'); log('Simulación: vehículo demanda salida', 'info');
+    if (!await verifyCommand(payload, firma)) { snack('Firma HMAC inválida'); return; }
+    EST.vehiculos.push(crearVehiculoSalida()); activarSensor('S1'); snack('Vehículo demandando salida (S1)'); log('Simulación: vehículo demanda salida', 'info');
   });
 
   document.getElementById('btnForzarPorton')?.addEventListener('click', async () => {
@@ -850,19 +841,19 @@ function bindEvents() {
     if (!await verifyCommand(payload, firma)) return;
     if (EST.portonEstado === 'cerrado') { EST.portonEstado = 'abriendo'; setTimeout(() => { EST.portonEstado = 'abierto'; EST.FCA = true; actualizarUI(); }, 1600); }
     else if (EST.portonEstado === 'abierto') cerrarPorton();
-    snack('🚧 Portón forzado manualmente'); log('Portón forzado por el Supervisor', 'warn'); actualizarUI();
+    snack('Portón forzado manualmente'); log('Portón forzado por el Supervisor', 'warn'); actualizarUI();
   });
 
   document.getElementById('btnAplicarTiempos')?.addEventListener('click', async () => {
     if (!puedeDo('ajustarTiempos')) return;
     const tv = parseInt(document.getElementById('inputTiempoVerde').value) * 1000;
     const tr = parseInt(document.getElementById('inputTiempoRojo').value) * 1000;
-    if (isNaN(tv) || isNaN(tr) || tv < 5000 || tr < 10000) { snack('⚠️ Tiempos fuera de rango'); return; }
+    if (isNaN(tv) || isNaN(tr) || tv < 5000 || tr < 10000) { snack('Tiempos fuera de rango'); return; }
     const { payload, firma } = await signCommand('AJUSTAR_TIEMPOS');
     if (!await verifyCommand(payload, firma)) return;
     EST.spVerdeMs = tv; EST.spRojoMs = tr;
     if (EST.sistemaActivo) iniciarCicloSP();
-    snack(`⚙️ SP actualizado: Verde ${tv/1000}s / Rojo ${tr/1000}s`); log(`Tiempos SP ajustados (Verde:${tv/1000}s Rojo:${tr/1000}s)`, 'warn');
+    snack(`SP actualizado: Verde ${tv/1000}s / Rojo ${tr/1000}s`); log(`Tiempos SP ajustados (Verde:${tv/1000}s Rojo:${tr/1000}s)`, 'warn');
   });
 
   document.getElementById('btnExportLog')?.addEventListener('click', () => {
@@ -874,7 +865,7 @@ function bindEvents() {
   // Admin Modal Trigger
   const modal = document.getElementById('adminModal');
   const openModal = () => {
-    if (!puedeDo('crearUsuario')) { snack('⛔ Sin permisos para crear usuarios'); return; }
+    if (!puedeDo('crearUsuario')) { snack('Sin permisos para crear usuarios'); return; }
     configurarModalCrearRol();
     renderAdminTabla();
     modal.hidden = false;
@@ -905,7 +896,6 @@ function bindEvents() {
     if (pwd.length < 6) return showAdmErr('Contraseña mínimo 6 caracteres');
     if (pwd !== conf) return showAdmErr('Las contraseñas no coinciden');
 
-    // Validación estricta de jerarquía en backend JS
     const rolActivo = sesion?.rol;
     if (rolActivo === 'Gerente') {
       if (!['Supervisor', 'Operador'].includes(rol)) return showAdmErr('Un Gerente sólo puede crear usuarios Supervisor u Operador');
@@ -917,13 +907,13 @@ function bindEvents() {
 
     try {
       const u = await registrarUsuario(nombre, rol, pwd);
-      okE.textContent = `✅ Usuario "${u.nombre}" [${u.rol}] creado con hash PBKDF2`; okE.hidden = false;
+      okE.textContent = `Usuario "${u.nombre}" [${u.rol}] creado con hash PBKDF2`; okE.hidden = false;
       document.getElementById('adminCrearForm').reset();
       renderAdminTabla();
       setTimeout(() => { okE.hidden = true; }, 3000);
     } catch (err) { showAdmErr(err.message); }
 
-    function showAdmErr(m) { errE.textContent = '⚠️ ' + m; errE.hidden = false; }
+    function showAdmErr(m) { errE.textContent = m; errE.hidden = false; }
   });
 
   window.addEventListener('resize', resizeCanvas);
