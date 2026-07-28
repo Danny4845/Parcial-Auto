@@ -267,7 +267,7 @@
       <div class="modal-header">
         <div class="modal-title">
           <span>Gestión de Usuarios por Rol</span>
-          <span class="sec-badge" id="modalSecBadge">RBAC Estricto</span>
+          <span class="sec-badge" id="modalSecBadge">Gestión de Usuarios</span>
         </div>
         <button id="btnCloseAdminModal" class="btn-close-modal">Cerrar</button>
       </div>
@@ -317,7 +317,7 @@
             <div id="admOk"    class="auth-ok"    hidden></div>
 
             <button type="submit" id="btnAdmCrear" class="btn-primary">
-              <span id="admBtnTxt">Generar Hash PBKDF2</span>
+              <span id="admBtnTxt">Crear Usuario</span>
               <div id="admSpinner" class="spinner" hidden></div>
             </button>
           </form>
@@ -331,7 +331,7 @@
             <div class="user-list-section" id="secGerentes" hidden>
               <div class="list-section-header">
                 <span class="list-section-title">Gerentes Registrados (<span id="cntGerentes">0</span>)</span>
-                <span class="sec-badge badge-gerente">Nivel ERP / Máximo</span>
+                <span class="sec-badge badge-gerente">Nivel Administración</span>
               </div>
               <div class="table-wrapper">
                 <table class="users-table">
@@ -339,8 +339,8 @@
                     <tr>
                       <th>#</th>
                       <th>Usuario</th>
-                      <th>Salt (base64)</th>
-                      <th>Hash PBKDF2</th>
+                      <th>Salt (Base64)</th>
+                      <th>Hash de Seguridad</th>
                       <th>Acción</th>
                     </tr>
                   </thead>
@@ -353,7 +353,7 @@
             <div class="user-list-section" id="secSupervisores" hidden>
               <div class="list-section-header">
                 <span class="list-section-title">Supervisores Registrados (<span id="cntSupervisores">0</span>)</span>
-                <span class="sec-badge badge-supervisor">Nivel Planta</span>
+                <span class="sec-badge badge-supervisor">Nivel Supervisión</span>
               </div>
               <div class="table-wrapper">
                 <table class="users-table">
@@ -361,8 +361,8 @@
                     <tr>
                       <th>#</th>
                       <th>Usuario</th>
-                      <th>Salt (base64)</th>
-                      <th>Hash PBKDF2</th>
+                      <th>Salt (Base64)</th>
+                      <th>Hash de Seguridad</th>
                       <th>Acción</th>
                     </tr>
                   </thead>
@@ -375,7 +375,7 @@
             <div class="user-list-section" id="secOperadores" hidden>
               <div class="list-section-header">
                 <span class="list-section-title">Operadores Registrados (<span id="cntOperadores">0</span>)</span>
-                <span class="sec-badge badge-operador">Nivel Control</span>
+                <span class="sec-badge badge-operador">Nivel Operación</span>
               </div>
               <div class="table-wrapper">
                 <table class="users-table">
@@ -383,8 +383,8 @@
                     <tr>
                       <th>#</th>
                       <th>Usuario</th>
-                      <th>Salt (base64)</th>
-                      <th>Hash PBKDF2</th>
+                      <th>Salt (Base64)</th>
+                      <th>Hash de Seguridad</th>
                       <th>Acción</th>
                     </tr>
                   </thead>

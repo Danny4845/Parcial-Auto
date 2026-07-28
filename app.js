@@ -949,7 +949,7 @@ function bindEvents() {
 
     try {
       const u = await registrarUsuario(nombre, rol, pwd);
-      okE.textContent = `Usuario "${u.nombre}" [${u.rol}] creado con hash PBKDF2`; okE.hidden = false;
+      okE.textContent = `Usuario "${u.nombre}" [${u.rol}] creado exitosamente`; okE.hidden = false;
       document.getElementById('adminCrearForm').reset();
       renderAdminTabla();
       setTimeout(() => { okE.hidden = true; }, 3000);
