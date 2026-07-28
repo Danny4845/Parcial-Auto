@@ -126,7 +126,7 @@
             <span id="displayRol" class="user-rol rol-badge">Rol</span>
           </div>
         </div>
-        <button id="btnOpenCrearUsuario" class="btn-admin-nav" hidden>Crear Usuario</button>
+        <button id="btnOpenCrearUsuario" class="btn-admin-nav" hidden>Gestionar Usuarios</button>
         <button id="btnLogout" class="btn-logout">Cerrar Sesión</button>
       </div>
     </header>
@@ -260,22 +260,23 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       3. MODAL DE CREACIÓN DE USUARIOS POR ROL (JERARQUÍA ESTRICTA)
+       3. MODAL DE CREACIÓN Y VISUALIZACIÓN DE USUARIOS POR ROL
        ═══════════════════════════════════════════════════════════════════ -->
   <div id="adminModal" class="modal-overlay" hidden>
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title">
-          <span>Crear Nuevo Usuario</span>
-          <span class="sec-badge" id="modalSecBadge">Jerarquía por Rol</span>
+          <span>Gestión de Usuarios por Rol</span>
+          <span class="sec-badge" id="modalSecBadge">RBAC Estricto</span>
         </div>
         <button id="btnCloseAdminModal" class="btn-close-modal">Cerrar</button>
       </div>
 
       <div class="modal-body">
 
-        <!-- CREAR USUARIO (IZQ) -->
+        <!-- FORMULARIO CREAR USUARIO (IZQ) -->
         <div class="modal-col-left">
+          <h3 class="form-title">Crear Nuevo Usuario</h3>
           <form id="adminCrearForm" class="auth-form" autocomplete="off">
             <div class="field-group">
               <label for="admNombre">Nombre de usuario</label>
@@ -322,37 +323,76 @@
           </form>
         </div>
 
-        <!-- LISTA DE USUARIOS CREADOS (DER) -->
+        <!-- LISTAS DE USUARIOS SEGÚN ROL (DER) -->
         <div class="modal-col-right">
-          <div class="users-toolbar">
-            <div class="users-count">
-              <span id="totalUsuarios">0</span> usuario(s) registrados
-            </div>
-            <div class="toolbar-actions">
-              <span class="sec-badge">
-                Guardado en localStorage
-              </span>
-            </div>
-          </div>
+          <div class="users-tables-container" id="usersTablesContainer">
 
-          <div class="table-wrapper">
-            <table class="users-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Usuario</th>
-                  <th>Rol</th>
-                  <th>Salt (base64)</th>
-                  <th>Hash PBKDF2</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody id="adminUsersBody">
-                <tr id="adminEmptyRow">
-                  <td colspan="6" class="empty-msg">No hay usuarios registrados.</td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- LISTA 1: GERENTES (Sólo visible para Gerente) -->
+            <div class="user-list-section" id="secGerentes" hidden>
+              <div class="list-section-header">
+                <span class="list-section-title">Gerentes Registrados (<span id="cntGerentes">0</span>)</span>
+                <span class="sec-badge badge-gerente">Nivel ERP / Máximo</span>
+              </div>
+              <div class="table-wrapper">
+                <table class="users-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Usuario</th>
+                      <th>Salt (base64)</th>
+                      <th>Hash PBKDF2</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bodyGerentes"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- LISTA 2: SUPERVISORES (Sólo visible para Gerente) -->
+            <div class="user-list-section" id="secSupervisores" hidden>
+              <div class="list-section-header">
+                <span class="list-section-title">Supervisores Registrados (<span id="cntSupervisores">0</span>)</span>
+                <span class="sec-badge badge-supervisor">Nivel Planta</span>
+              </div>
+              <div class="table-wrapper">
+                <table class="users-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Usuario</th>
+                      <th>Salt (base64)</th>
+                      <th>Hash PBKDF2</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bodySupervisores"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- LISTA 3: OPERADORES (Visible para Gerente y Supervisor) -->
+            <div class="user-list-section" id="secOperadores" hidden>
+              <div class="list-section-header">
+                <span class="list-section-title">Operadores Registrados (<span id="cntOperadores">0</span>)</span>
+                <span class="sec-badge badge-operador">Nivel Control</span>
+              </div>
+              <div class="table-wrapper">
+                <table class="users-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Usuario</th>
+                      <th>Salt (base64)</th>
+                      <th>Hash PBKDF2</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bodyOperadores"></tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         </div>
 

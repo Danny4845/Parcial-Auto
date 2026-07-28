@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════════
    SCADA — Estacionamiento Automatizado · III Parcial
-   app.js — Jerarquía RBAC Estricta & PBKDF2 (Negro & Turquesa Claro)
+   app.js — Jerarquía RBAC Estricta, 3 Listas Separadas por Rol & Semáforo Real
    Equipo: Daniel Colmenares & Hernaldo Pérez Roa
    ══════════════════════════════════════════════════════════════════ */
 
@@ -100,11 +100,11 @@ function evaluarFuerza(pwd) {
   if (/[A-Z]/.test(pwd)) s++; if (/[0-9]/.test(pwd)) s++; if (/[^A-Za-z0-9]/.test(pwd)) s++;
   const niveles = [
     { pct: 0, color: 'transparent', label: '' },
-    { pct: 20, color: '#35524d', label: 'Muy débil' },
-    { pct: 40, color: '#289988', label: 'Débil' },
-    { pct: 60, color: '#3dbda9', label: 'Aceptable' },
+    { pct: 20, color: '#ff3344', label: 'Muy débil' },
+    { pct: 40, color: '#ffaa00', label: 'Débil' },
+    { pct: 60, color: '#ffd740', label: 'Aceptable' },
     { pct: 80, color: '#4cd6c0', label: 'Fuerte' },
-    { pct: 100, color: '#70e7d7', label: 'Muy fuerte' }
+    { pct: 100, color: '#00e676', label: 'Muy fuerte' }
   ];
   return niveles[Math.min(s, 5)];
 }
@@ -156,7 +156,7 @@ const PERMISOS = {
 function puedeDo(accion) { return sesion && (PERMISOS[sesion.rol] || []).includes(accion); }
 
 /* ═══════════════════════════════════════════════════════════════════
-   4. CANVAS SCADA (Dibujo cenital — Negro & Turquesa Claro)
+   4. CANVAS SCADA (Colores Reales de Semáforo: Rojo, Verde, Azul, Amarillo)
    ═══════════════════════════════════════════════════════════════════ */
 const canvas = document.getElementById('scadaCanvas');
 const ctx    = canvas.getContext('2d');
@@ -177,29 +177,30 @@ function drawScene() {
   const cwX = gW, cwW = W * 0.22, cwX2 = cwX + cwW;
   const entY = H * 0.36, salY = H * 0.64, lH = H * 0.13;
 
-  ctx.fillStyle = '#090d14'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#040609'; ctx.fillRect(0, 0, gW, H);
+  ctx.fillStyle = '#1d212b'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#14171f'; ctx.fillRect(0, 0, gW, H);
 
-  ctx.strokeStyle = '#4cd6c0'; ctx.lineWidth = 3;
+  ctx.strokeStyle = '#ffaa00'; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(gW, 0); ctx.lineTo(gW, H); ctx.stroke();
   ctx.strokeRect(1.5, 1.5, gW - 1.5, H - 3); ctx.lineWidth = 1;
 
   drawParkingGrid(gW, H);
 
-  ctx.fillStyle = '#4cd6c044'; ctx.font = `bold ${Math.floor(W * 0.022)}px system-ui`;
+  ctx.fillStyle = '#ffaa0066'; ctx.font = `bold ${Math.floor(W * 0.022)}px system-ui`;
   ctx.textAlign = 'center'; ctx.fillText('100 PLAZAS', gW / 2, H / 2);
 
-  drawCarril(0, entY, gW, lH, '#0e1822', '← ENTRADA', '#4cd6c066', 'left');
-  drawCarril(0, salY, gW, lH, '#0e1822', 'SALIDA →',  '#4cd6c066', 'right');
+  drawCarril(0, entY, gW, lH, '#172233', '← ENTRADA', '#3388ffaa', 'left');
+  drawCarril(0, salY, gW, lH, '#262016', 'SALIDA →',  '#ffaa00aa', 'right');
 
-  ctx.fillStyle = '#0f1622'; ctx.fillRect(cwX2, 0, W - cwX2, H);
+  ctx.fillStyle = '#222736'; ctx.fillRect(cwX2, 0, W - cwX2, H);
 
-  drawDiagonalLane(cwX2, entY, W, H * 0.08, lH, '#0e1822', '← ENTRADA', '#4cd6c044');
-  drawDiagonalLane(cwX2, salY, W, H * 0.92, lH, '#0e1822', 'SALIDA →',  '#4cd6c044');
+  drawDiagonalLane(cwX2, entY, W, H * 0.08, lH, '#172233', '← ENTRADA', '#3388ffaa');
+  drawDiagonalLane(cwX2, salY, W, H * 0.92, lH, '#262016', 'SALIDA →',  '#ffaa00aa');
 
   drawCrosswalk(cwX, entY - lH / 2, cwW, lH + (salY - entY) + lH);
   drawPorton(cwX, entY - lH / 2, cwW, lH + (salY - entY) + lH);
 
+  // Semáforos con Colores Reales (Rojo / Verde / Azul)
   drawTrafficLight(cwX + cwW * 0.18, H * 0.03, 'S.P.', EST.semPeatonal, false);
   drawTrafficLight(cwX + cwW * 0.72, H * 0.03, 'S.E.', EST.semEntrada, true);
   drawTrafficLight(cwX + cwW * 0.45, H * 0.80, 'S.S.', EST.semSalida, false);
@@ -209,14 +210,14 @@ function drawScene() {
   const s1x = gW * 0.82, s1y = salY;
   const s2x = cwX2 + (W - cwX2) * 0.55, s2y = salY;
 
-  drawSensor(e1x, e1y, 'E1', EST.E1, '#4cd6c0');
-  drawSensor(e2x, e2y, 'E2', EST.E2, '#4cd6c0');
-  drawSensor(s1x, s1y, 'S1', EST.S1, '#4cd6c0');
-  drawSensor(s2x, s2y, 'S2', EST.S2, '#4cd6c0');
+  drawSensor(e1x, e1y, 'E1', EST.E1, '#3388ff');
+  drawSensor(e2x, e2y, 'E2', EST.E2, '#3388ff');
+  drawSensor(s1x, s1y, 'S1', EST.S1, '#ffaa00');
+  drawSensor(s2x, s2y, 'S2', EST.S2, '#ffaa00');
 
   ctx.font = `bold ${Math.floor(W * 0.016)}px monospace`; ctx.textAlign = 'left';
-  ctx.fillStyle = EST.FCA ? '#4cd6c0' : '#203834'; ctx.fillText('FCA', cwX + 4, entY - lH / 2 - 5);
-  ctx.fillStyle = EST.FCC ? '#4cd6c0' : '#203834'; ctx.fillText('FCC', cwX + 4, salY + lH / 2 + 14);
+  ctx.fillStyle = EST.FCA ? '#00e676' : '#353c4e'; ctx.fillText('FCA', cwX + 4, entY - lH / 2 - 5);
+  ctx.fillStyle = EST.FCC ? '#00e676' : '#353c4e'; ctx.fillText('FCC', cwX + 4, salY + lH / 2 + 14);
 
   for (const v of EST.vehiculos) drawVehiculo(v);
   drawPaIndicator(W, H);
@@ -236,11 +237,11 @@ function drawParkingGrid(gW, H) {
       for (let c = 0; c < cols; c++) {
         const x = margin + c * (spotW + 4), y = startY + r * (spotH + 4);
         const ocu = idx < EST.plazasOcupadas;
-        ctx.fillStyle   = ocu ? 'rgba(76, 214, 192, 0.25)' : '#070c14';
-        ctx.strokeStyle = ocu ? '#4cd6c0' : '#152220';
+        ctx.fillStyle   = ocu ? 'rgba(255, 51, 68, 0.2)' : '#1a1f2c';
+        ctx.strokeStyle = ocu ? '#ff3344' : '#2d3548';
         roundRect(ctx, x, y, spotW, spotH, 3); ctx.fill(); ctx.stroke();
         if (ocu) {
-          ctx.fillStyle = '#4cd6c0';
+          ctx.fillStyle = '#ff3344';
           roundRect(ctx, x + spotW * 0.15, y + spotH * 0.2, spotW * 0.7, spotH * 0.6, 2); ctx.fill();
         }
         idx++;
@@ -251,7 +252,7 @@ function drawParkingGrid(gW, H) {
 
 function drawCarril(x, centerY, w, h, fillColor, label, labelColor, dir) {
   ctx.fillStyle = fillColor; ctx.fillRect(x, centerY - h / 2, w, h);
-  ctx.strokeStyle = '#ffffff08'; ctx.lineWidth = 1; ctx.setLineDash([12, 10]);
+  ctx.strokeStyle = '#ffffff10'; ctx.lineWidth = 1; ctx.setLineDash([12, 10]);
   ctx.beginPath(); ctx.moveTo(x, centerY); ctx.lineTo(x + w, centerY); ctx.stroke(); ctx.setLineDash([]);
   ctx.font = `bold ${Math.floor(h * 0.28)}px system-ui`; ctx.fillStyle = labelColor;
   ctx.textAlign = dir === 'left' ? 'left' : 'right';
@@ -266,26 +267,26 @@ function drawDiagonalLane(startX, startY, endX, endY, lH, fillColor, label, labe
 }
 
 function drawCrosswalk(x, y, w, h) {
-  ctx.fillStyle = '#0c141d'; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#1c2230'; ctx.fillRect(x, y, w, h);
   const stripeH = h / 13, active = EST.semPeatonal === 'verde';
   for (let i = 0; i < 7; i++) {
-    ctx.fillStyle = active ? '#4cd6c033' : '#152220';
+    ctx.fillStyle = active ? '#00e67644' : '#ffffff12';
     ctx.fillRect(x + w * 0.08, y + i * stripeH * 2, w * 0.84, stripeH);
   }
-  ctx.strokeStyle = '#203834'; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
+  ctx.strokeStyle = '#353c4e'; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
 }
 
 function drawPorton(x, y, w, h) {
   const barCount = 6;
   let apertura = EST.portonEstado === 'abierto' ? 1 : (EST.portonEstado === 'abriendo' || EST.portonEstado === 'cerrando') ? 0.55 : 0;
-  const color = '#4cd6c0';
+  const color = EST.portonEstado === 'cerrado' ? '#ff3344' : EST.portonEstado === 'abierto' ? '#00e676' : '#ffaa00';
 
-  ctx.fillStyle = '#152220';
+  ctx.fillStyle = '#353c4e';
   ctx.fillRect(x + w * 0.1, y, w * 0.05, h); ctx.fillRect(x + w * 0.85, y, w * 0.05, h);
 
   const barW = (w * 0.65) / barCount, barStartX = x + w * 0.175, barH = h * (1 - apertura);
   for (let i = 0; i < barCount; i++) {
-    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 4;
+    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 6;
     roundRect(ctx, barStartX + i * barW, y, barW * 0.65, barH, 2); ctx.fill(); ctx.shadowBlur = 0;
   }
 }
@@ -293,60 +294,61 @@ function drawPorton(x, y, w, h) {
 function drawTrafficLight(x, y, label, estado, hasAzul) {
   const R = canvas.width * 0.020, pad = R * 0.6;
   const lights = hasAzul
-    ? [{ color: '#35524d', on: estado === 'rojo' }, { color: '#4cd6c0', on: estado === 'verde' }, { color: '#70e7d7', on: estado === 'azul' }]
-    : [{ color: '#35524d', on: estado === 'rojo' }, { color: '#4cd6c0', on: estado === 'verde' }];
+    ? [{ color: '#ff3344', on: estado === 'rojo' }, { color: '#00e676', on: estado === 'verde' }, { color: '#3388ff', on: estado === 'azul' }]
+    : [{ color: '#ff3344', on: estado === 'rojo' }, { color: '#00e676', on: estado === 'verde' }];
 
   const bH = pad * 2 + lights.length * R * 2 + (lights.length - 1) * pad, bW = R * 2 + pad * 2;
 
-  ctx.fillStyle = '#090d14'; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.fill();
-  ctx.strokeStyle = '#203834'; ctx.lineWidth = 1.5; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.stroke();
+  ctx.fillStyle = '#14171f'; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.fill();
+  ctx.strokeStyle = '#353c4e'; ctx.lineWidth = 1.5; roundRect(ctx, x - bW / 2, y, bW, bH, 5); ctx.stroke();
 
   lights.forEach((l, i) => {
     const ly = y + pad + i * (R * 2 + pad) + R;
     ctx.beginPath(); ctx.arc(x, ly, R, 0, Math.PI * 2);
-    ctx.fillStyle = l.on ? l.color : '#131b29';
-    if (l.on) { ctx.shadowColor = l.color; ctx.shadowBlur = 8; }
+    ctx.fillStyle = l.on ? l.color : l.color + '25';
+    if (l.on) { ctx.shadowColor = l.color; ctx.shadowBlur = 12; }
     ctx.fill(); ctx.shadowBlur = 0;
   });
 
-  ctx.font = `bold ${Math.floor(R * 0.9)}px system-ui`; ctx.fillStyle = '#80b3ad'; ctx.textAlign = 'center';
+  ctx.font = `bold ${Math.floor(R * 0.9)}px system-ui`; ctx.fillStyle = '#9ba5b8'; ctx.textAlign = 'center';
   ctx.fillText(label, x, y + bH + R * 0.9);
 }
 
 function drawSensor(x, y, label, activo, color) {
   const R = canvas.width * 0.013;
   ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2);
-  ctx.fillStyle = activo ? color : '#131b29';
-  if (activo) { ctx.shadowColor = color; ctx.shadowBlur = 8; }
+  ctx.fillStyle = activo ? color : color + '25';
+  if (activo) { ctx.shadowColor = color; ctx.shadowBlur = 10; }
   ctx.fill(); ctx.shadowBlur = 0;
-  ctx.strokeStyle = activo ? color : '#203834'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.font = `bold ${Math.floor(R * 1.1)}px system-ui`; ctx.fillStyle = activo ? color : '#40706b'; ctx.textAlign = 'center';
+  ctx.strokeStyle = activo ? color : '#353c4e'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.font = `bold ${Math.floor(R * 1.1)}px system-ui`; ctx.fillStyle = activo ? color : '#647087'; ctx.textAlign = 'center';
   ctx.fillText(label, x, y - R - 4);
 }
 
 function drawPaIndicator(W, H) {
   const x = W * 0.37, y = H * 0.52, w = W * 0.19;
-  ctx.fillStyle = EST.paActivo ? 'rgba(76,214,192,0.15)' : 'rgba(25,35,32,0.6)';
-  ctx.strokeStyle = EST.paActivo ? '#4cd6c0' : '#203834';
+  ctx.fillStyle = EST.paActivo ? 'rgba(0,230,118,0.18)' : 'rgba(255,51,68,0.15)';
+  ctx.strokeStyle = EST.paActivo ? '#00e676' : '#ff3344';
   roundRect(ctx, x, y, w, H * 0.06, 4); ctx.fill(); ctx.stroke();
-  ctx.font = `bold ${Math.floor(W * 0.014)}px system-ui`; ctx.fillStyle = EST.paActivo ? '#4cd6c0' : '#40706b';
+  ctx.font = `bold ${Math.floor(W * 0.014)}px system-ui`; ctx.fillStyle = EST.paActivo ? '#00e676' : '#ff3344';
   ctx.textAlign = 'center'; ctx.fillText(EST.paActivo ? 'PA ACTIVO' : 'PA INACTIVO', x + w / 2, y + H * 0.038);
 }
 
 function drawCounter(W, H) {
   const cW = W * 0.20, cH = H * 0.07, x = W - cW - 10, y = H - cH - 10;
-  ctx.fillStyle = 'rgba(9,13,20,0.92)'; roundRect(ctx, x, y, cW, cH, 6); ctx.fill();
-  ctx.strokeStyle = '#203834'; ctx.lineWidth = 1; roundRect(ctx, x, y, cW, cH, 6); ctx.stroke();
+  ctx.fillStyle = 'rgba(29,33,43,0.92)'; roundRect(ctx, x, y, cW, cH, 6); ctx.fill();
+  ctx.strokeStyle = '#353c4e'; ctx.lineWidth = 1; roundRect(ctx, x, y, cW, cH, 6); ctx.stroke();
   const libre = 100 - EST.plazasOcupadas;
-  ctx.font = `bold ${Math.floor(cH * 0.48)}px monospace`; ctx.fillStyle = '#4cd6c0'; ctx.textAlign = 'center';
+  const color = libre > 20 ? '#4cd6c0' : libre > 5 ? '#ffaa00' : '#ff3344';
+  ctx.font = `bold ${Math.floor(cH * 0.48)}px monospace`; ctx.fillStyle = color; ctx.textAlign = 'center';
   ctx.fillText(`${libre} LIBRES`, x + cW / 2, y + cH * 0.68);
 }
 
 function drawVehiculo(v) {
   const vW = canvas.width * 0.06, vH = canvas.height * 0.05;
   ctx.save(); ctx.translate(v.x, v.y);
-  ctx.fillStyle = '#4cd6c0'; roundRect(ctx, -vW / 2, -vH / 2, vW, vH, 4); ctx.fill();
-  ctx.fillStyle = '#090d14'; roundRect(ctx, -vW * 0.22, -vH * 0.26, vW * 0.44, vH * 0.36, 2); ctx.fill();
+  ctx.fillStyle = '#3388ff'; roundRect(ctx, -vW / 2, -vH / 2, vW, vH, 4); ctx.fill();
+  ctx.fillStyle = '#14171f'; roundRect(ctx, -vW * 0.22, -vH * 0.26, vW * 0.44, vH * 0.36, 2); ctx.fill();
   ctx.restore();
 }
 
@@ -362,11 +364,11 @@ function roundRect(ctx, x, y, w, h, r) {
    ═══════════════════════════════════════════════════════════════════ */
 function crearVehiculoEntrada() {
   const W = canvas.width, H = canvas.height;
-  return { id: crypto.randomUUID(), tipo: 'entrada', x: W * 0.96, y: H * 0.36, color: '#4cd6c0', fase: 'llegando', speed: 2.2 };
+  return { id: crypto.randomUUID(), tipo: 'entrada', x: W * 0.96, y: H * 0.36, color: '#3388ff', fase: 'llegando', speed: 2.2 };
 }
 function crearVehiculoSalida() {
   const W = canvas.width, H = canvas.height;
-  return { id: crypto.randomUUID(), tipo: 'salida', x: W * 0.20, y: H * 0.64, color: '#4cd6c0', fase: 'esperandoVerde', speed: 2.2 };
+  return { id: crypto.randomUUID(), tipo: 'salida', x: W * 0.20, y: H * 0.64, color: '#ffaa00', fase: 'esperandoVerde', speed: 2.2 };
 }
 
 function updateVehiculos() {
@@ -591,10 +593,10 @@ function aplicarRBAC() {
   const pg = document.getElementById('panelGerente');   if (pg) pg.hidden = !esGerente;
   const pl = document.getElementById('panelLog');       if (pl) pl.hidden = esOperador;
 
-  // Botón de Crear Usuario en Header
+  // Botón de Gestionar/Crear Usuarios en Header
   const btnCrear = document.getElementById('btnOpenCrearUsuario');
   if (btnCrear) {
-    btnCrear.hidden = esOperador;
+    btnCrear.hidden = esOperador; // Operador NO puede crear ni ver usuarios
   }
 
   const av = document.getElementById('userAvatar'); if (av) av.textContent = (sesion?.nombre?.[0] ?? '?').toUpperCase();
@@ -626,7 +628,7 @@ function configurarModalCrearRol() {
     if (hint) hint.textContent = 'Como Supervisor, únicamente puedes crear usuarios Operador.';
   } else {
     selRol.innerHTML = '';
-    if (hint) hint.textContent = 'Los operadores no tienen permisos para crear usuarios.';
+    if (hint) hint.textContent = 'Los operadores no tienen permisos para crear ni ver usuarios.';
   }
 }
 
@@ -662,44 +664,84 @@ function verificarPantallaInicial() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   7. ADMIN MODAL LOGIC (TABLA DE USUARIOS CREADOS)
+   7. ADMIN MODAL LOGIC (TABLAS SEPARADAS SEGÚN ROL)
    ═══════════════════════════════════════════════════════════════════ */
 function renderAdminTabla() {
-  const tbody = document.getElementById('adminUsersBody'), emptyRow = document.getElementById('adminEmptyRow');
-  if (!tbody) return;
-  Array.from(tbody.querySelectorAll('tr.user-row')).forEach(r => r.remove());
+  const rolActivo = sesion?.rol;
 
-  if (USUARIOS_BD.length === 0) {
-    if (emptyRow) emptyRow.hidden = false;
+  const secGer = document.getElementById('secGerentes');
+  const secSup = document.getElementById('secSupervisores');
+  const secOpe = document.getElementById('secOperadores');
+
+  const bodyGer = document.getElementById('bodyGerentes');
+  const bodySup = document.getElementById('bodySupervisores');
+  const bodyOpe = document.getElementById('bodyOperadores');
+
+  if (!bodyGer || !bodySup || !bodyOpe) return;
+
+  // Filtrado de usuarios por rol
+  const gerentes     = USUARIOS_BD.filter(u => u.rol === 'Gerente');
+  const supervisores = USUARIOS_BD.filter(u => u.rol === 'Supervisor' || u.rol === 'Ingeniero');
+  const operadores   = USUARIOS_BD.filter(u => u.rol === 'Operador');
+
+  setEl('cntGerentes', gerentes.length);
+  setEl('cntSupervisores', supervisores.length);
+  setEl('cntOperadores', operadores.length);
+
+  if (rolActivo === 'Gerente') {
+    // Gerente ve LAS 3 LISTAS
+    if (secGer) secGer.hidden = false;
+    if (secSup) secSup.hidden = false;
+    if (secOpe) secOpe.hidden = false;
+
+    renderSubTabla(bodyGer, gerentes);
+    renderSubTabla(bodySup, supervisores);
+    renderSubTabla(bodyOpe, operadores);
+  } else if (rolActivo === 'Supervisor' || rolActivo === 'Ingeniero') {
+    // Supervisor ve ÚNICAMENTE la lista de Operadores
+    if (secGer) secGer.hidden = true;
+    if (secSup) secSup.hidden = true;
+    if (secOpe) secOpe.hidden = false;
+
+    renderSubTabla(bodyOpe, operadores);
   } else {
-    if (emptyRow) emptyRow.hidden = true;
-    USUARIOS_BD.forEach((u, i) => {
-      const tr = document.createElement('tr'); tr.className = 'user-row';
-      tr.innerHTML = `
-        <td>${i + 1}</td>
-        <td style="font-weight:700">${u.nombre}</td>
-        <td><span class="user-rol rol-badge rol-${u.rol}">${u.rol}</span></td>
-        <td class="mono" title="${u.salt}">${u.salt.slice(0,10)}…</td>
-        <td class="mono" title="${u.hash}">${u.hash.slice(0,14)}…</td>
-        <td><button class="btn-del" data-nombre="${u.nombre}">Eliminar</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
+    // Operador NO ve ninguna lista
+    if (secGer) secGer.hidden = true;
+    if (secSup) secSup.hidden = true;
+    if (secOpe) secOpe.hidden = true;
+  }
+}
 
-    tbody.querySelectorAll('.btn-del').forEach(b => {
-      b.addEventListener('click', () => {
-        const nom = b.dataset.nombre;
-        if (confirm(`¿Eliminar usuario "${nom}"?`)) {
-          USUARIOS_BD = USUARIOS_BD.filter(u => u.nombre !== nom);
-          persistirUsuariosLocales();
-          renderAdminTabla();
-          verificarPantallaInicial();
-        }
-      });
-    });
+function renderSubTabla(tbody, lista) {
+  tbody.innerHTML = '';
+  if (lista.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No hay usuarios registrados en este rol.</td></tr>';
+    return;
   }
 
-  setEl('totalUsuarios', USUARIOS_BD.length);
+  lista.forEach((u, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td style="font-weight:700">${u.nombre}</td>
+      <td class="mono" title="${u.salt}">${u.salt.slice(0,10)}…</td>
+      <td class="mono" title="${u.hash}">${u.hash.slice(0,14)}…</td>
+      <td><button class="btn-del" data-nombre="${u.nombre}">Eliminar</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.btn-del').forEach(b => {
+    b.addEventListener('click', () => {
+      const nom = b.dataset.nombre;
+      if (confirm(`¿Eliminar usuario "${nom}"?`)) {
+        USUARIOS_BD = USUARIOS_BD.filter(u => u.nombre !== nom);
+        persistirUsuariosLocales();
+        renderAdminTabla();
+        verificarPantallaInicial();
+      }
+    });
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════════════
