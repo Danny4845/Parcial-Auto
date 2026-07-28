@@ -1,24 +1,17 @@
 /* ══════════════════════════════════════════════════════════════════
    SCADA — Estacionamiento Automatizado · III Parcial
-   app.js — Sistema Unificado: Auth, PBKDF2, HMAC, HMI Canvas, Admin
+   app.js — Jerarquía RBAC Estricta & PBKDF2 (Gerente -> Supervisor -> Operador)
    Equipo: Daniel Colmenares & Hernaldo Pérez Roa
    ══════════════════════════════════════════════════════════════════ */
 
 'use strict';
 
 /* ═══════════════════════════════════════════════════════════════════
-   1. CREDENCIALES & USUARIOS DEMO (PBKDF2 · 100k iter · SHA-256)
+   1. USUARIOS Y PERSISTENCIA (SIN USUARIOS HARDECODEADOS)
    ═══════════════════════════════════════════════════════════════════ */
-const USUARIOS_DEMO = [
-  { nombre: 'operador1',  rol: 'Operador',  salt: '2JtnQIWcXshs7ACnm/WLIg==', hash: '0o27iaUjLJI0dky6k1dDlX0FYDKmDSu9pf/EG9zVMdU=' },
-  { nombre: 'ingeniero1', rol: 'Ingeniero', salt: 'SgR45c2jLqkLntsarS5lOw==', hash: '1Vo6oGqM3Kc1wHnFk213ijAdjpy/9ALfbWts6AgO5lg=' },
-  { nombre: 'gerente1',   rol: 'Gerente',   salt: '/bqIJqzIw+av+Gya6nS4nA==', hash: 'F3ukZ6SQYi2FlGTU7DSCYMktQXCuVDSrWokXkCFS7Ik=' }
-];
-
-let USUARIOS_BD   = [...USUARIOS_DEMO];
-let usandoDemo    = true;
-const CODIGO_ACT  = 'admin2026';
-const LS_KEY      = 'scada_usuarios_registrados';
+const USUARIOS_DEMO = []; // Sin usuarios de prueba hardcodeados
+let USUARIOS_BD = [];
+const LS_KEY = 'scada_usuarios_registrados';
 
 /* ═══════════════════════════════════════════════════════════════════
    2. CRIPTOGRAFÍA — HMAC & PBKDF2 (Web Crypto API)
@@ -77,20 +70,14 @@ async function autenticar(nombre, password) {
 function cargarUsuariosLocales() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return;
+    if (!raw) { USUARIOS_BD = []; return; }
     const guardados = JSON.parse(raw);
-    if (!Array.isArray(guardados)) return;
-    const setNombres = new Set(USUARIOS_BD.map(u => u.nombre));
-    for (const u of guardados) {
-      if (!setNombres.has(u.nombre)) USUARIOS_BD.push(u);
-    }
-    if (guardados.length > 0) actualizarSourceLabel();
-  } catch (_) {}
+    USUARIOS_BD = Array.isArray(guardados) ? guardados : [];
+  } catch (_) { USUARIOS_BD = []; }
 }
 
 function persistirUsuariosLocales() {
-  const reg = USUARIOS_BD.filter(u => !USUARIOS_DEMO.some(d => d.nombre === u.nombre));
-  localStorage.setItem(LS_KEY, JSON.stringify(reg));
+  localStorage.setItem(LS_KEY, JSON.stringify(USUARIOS_BD));
 }
 
 async function registrarUsuario(nombre, rol, password) {
@@ -101,6 +88,10 @@ async function registrarUsuario(nombre, rol, password) {
   USUARIOS_BD.push(u);
   persistirUsuariosLocales();
   return u;
+}
+
+function existeGerente() {
+  return USUARIOS_BD.some(u => u.rol === 'Gerente');
 }
 
 function evaluarFuerza(pwd) {
@@ -157,9 +148,10 @@ function log(msg, tipo = 'info') {
 
 /* RBAC Permisos */
 const PERMISOS = {
-  Operador:  ['inicio', 'reset', 'simE1', 'simS1'],
-  Ingeniero: ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog'],
-  Gerente:   ['verLog', 'verMetricas']
+  Operador:   ['inicio', 'reset', 'simE1', 'simS1'],
+  Supervisor: ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'crearUsuario'],
+  Ingeniero:  ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'crearUsuario'],
+  Gerente:    ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'verMetricas', 'crearUsuario']
 };
 function puedeDo(accion) { return sesion && (PERMISOS[sesion.rol] || []).includes(accion); }
 
@@ -185,11 +177,9 @@ function drawScene() {
   const cwX = gW, cwW = W * 0.22, cwX2 = cwX + cwW;
   const entY = H * 0.36, salY = H * 0.64, lH = H * 0.13;
 
-  // Fondo garaje & calle
   ctx.fillStyle = '#0e1420'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#080d18'; ctx.fillRect(0, 0, gW, H);
 
-  // Borde Naranja Garaje
   ctx.strokeStyle = '#ff8c00'; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(gW, 0); ctx.lineTo(gW, H); ctx.stroke();
   ctx.strokeRect(1.5, 1.5, gW - 1.5, H - 3); ctx.lineWidth = 1;
@@ -599,15 +589,52 @@ function renderLoop() {
 
 function aplicarRBAC() {
   const rol = sesion?.rol;
-  const pi = document.getElementById('panelIngeniero'); if (pi) pi.hidden = rol !== 'Ingeniero';
-  const pg = document.getElementById('panelGerente'); if (pg) pg.hidden = rol !== 'Gerente';
-  const pl = document.getElementById('panelLog'); if (pl) pl.hidden = !(rol === 'Ingeniero' || rol === 'Gerente');
+  const esSupervisor = (rol === 'Supervisor' || rol === 'Ingeniero');
+  const esGerente    = (rol === 'Gerente');
+  const esOperador   = (rol === 'Operador');
+
+  // Paneles por rol
+  const pi = document.getElementById('panelIngeniero'); if (pi) pi.hidden = !esSupervisor && !esGerente;
+  const pg = document.getElementById('panelGerente');   if (pg) pg.hidden = !esGerente;
+  const pl = document.getElementById('panelLog');       if (pl) pl.hidden = esOperador;
+
+  // Botón de Crear Usuario en Header
+  const btnCrear = document.getElementById('btnOpenCrearUsuario');
+  if (btnCrear) {
+    btnCrear.hidden = esOperador; // Operador NO puede crear usuarios
+  }
 
   const av = document.getElementById('userAvatar'); if (av) av.textContent = (sesion?.nombre?.[0] ?? '?').toUpperCase();
   setEl('displayNombre', sesion?.nombre ?? '—');
   const re = document.getElementById('displayRol');
   if (re) { re.textContent = sesion?.rol ?? '—'; re.className = `user-rol rol-badge rol-${sesion?.rol ?? ''}`; }
+
+  configurarModalCrearRol();
   actualizarUI();
+}
+
+function configurarModalCrearRol() {
+  const selRol = document.getElementById('admRol');
+  const hint   = document.getElementById('admRolHint');
+  if (!selRol) return;
+
+  const rolActivo = sesion?.rol;
+
+  if (rolActivo === 'Gerente') {
+    selRol.innerHTML = `
+      <option value="Supervisor">Supervisor / Ingeniero (Nivel Planta)</option>
+      <option value="Operador">Operador (Nivel Control)</option>
+    `;
+    if (hint) hint.textContent = 'Como Gerente, puedes crear usuarios Supervisor u Operador.';
+  } else if (rolActivo === 'Supervisor' || rolActivo === 'Ingeniero') {
+    selRol.innerHTML = `
+      <option value="Operador">Operador (Nivel Control)</option>
+    `;
+    if (hint) hint.textContent = 'Como Supervisor, únicamente puedes crear usuarios Operador.';
+  } else {
+    selRol.innerHTML = '';
+    if (hint) hint.textContent = 'Los operadores no tienen permisos para crear usuarios.';
+  }
 }
 
 function mostrarApp() {
@@ -618,23 +645,43 @@ function mostrarApp() {
 
 function cerrarSesion() {
   log('Sesión cerrada', 'warn'); sesion = null; resetSistema();
-  document.getElementById('authOverlay').hidden = false;
-  document.getElementById('app').hidden = true;
-  document.getElementById('inputUsuario').value = '';
-  document.getElementById('inputPassword').value = '';
-  document.getElementById('loginError').hidden = true;
+  verificarPantallaInicial();
+}
+
+function verificarPantallaInicial() {
+  const authOverlay   = document.getElementById('authOverlay');
+  const mainApp       = document.getElementById('app');
+  const adminModal    = document.getElementById('adminModal');
+  const panelBoot     = document.getElementById('panelBootstrapGerente');
+  const panelLogin    = document.getElementById('panelLogin');
+
+  if (authOverlay) authOverlay.hidden = false;
+  if (mainApp)     mainApp.hidden = true;
+  if (adminModal)  adminModal.hidden = true;
+
+  if (!existeGerente()) {
+    // Si NO hay Gerente -> Mostrar Setup Inicial del Gerente
+    if (panelBoot)  panelBoot.hidden  = false;
+    if (panelLogin) panelLogin.hidden = true;
+  } else {
+    // Si YA hay Gerente -> Mostrar ÚNICAMENTE el Iniciar Sesión
+    if (panelBoot)  panelBoot.hidden  = true;
+    if (panelLogin) panelLogin.hidden = false;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   7. ADMIN MODAL LOGIC
+   7. ADMIN MODAL LOGIC (TABLA DE USUARIOS CREADOS)
    ═══════════════════════════════════════════════════════════════════ */
 function renderAdminTabla() {
   const tbody = document.getElementById('adminUsersBody'), emptyRow = document.getElementById('adminEmptyRow');
   if (!tbody) return;
   Array.from(tbody.querySelectorAll('tr.user-row')).forEach(r => r.remove());
 
-  if (USUARIOS_BD.length === 0) { emptyRow.hidden = false; } else {
-    emptyRow.hidden = true;
+  if (USUARIOS_BD.length === 0) {
+    if (emptyRow) emptyRow.hidden = false;
+  } else {
+    if (emptyRow) emptyRow.hidden = true;
     USUARIOS_BD.forEach((u, i) => {
       const tr = document.createElement('tr'); tr.className = 'user-row';
       tr.innerHTML = `
@@ -653,7 +700,9 @@ function renderAdminTabla() {
         const nom = b.dataset.nombre;
         if (confirm(`¿Eliminar usuario "${nom}"?`)) {
           USUARIOS_BD = USUARIOS_BD.filter(u => u.nombre !== nom);
-          persistirUsuariosLocales(); renderAdminTabla(); actualizarSourceLabel();
+          persistirUsuariosLocales();
+          renderAdminTabla();
+          verificarPantallaInicial();
         }
       });
     });
@@ -662,30 +711,70 @@ function renderAdminTabla() {
   setEl('totalUsuarios', USUARIOS_BD.length);
 }
 
-function actualizarSourceLabel() {
-  const hint = document.getElementById('loginUserHint');
-  if (hint) {
-    hint.textContent = USUARIOS_BD.map(u => u.nombre).slice(0, 5).join(' · ');
-  }
-}
-
 /* ═══════════════════════════════════════════════════════════════════
    8. EVENTOS & BINDINGS
    ═══════════════════════════════════════════════════════════════════ */
 function bindEvents() {
-  // Tabs Login/Registro
-  document.querySelectorAll('.auth-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = btn.dataset.tab;
-      document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('panelLogin').hidden    = tab !== 'login';
-      document.getElementById('panelRegistro').hidden = tab !== 'registro';
-    });
+
+  // Submit Formulario Bootstrap Gerente Inicial
+  document.getElementById('bootstrapGerenteForm')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const bootErr = document.getElementById('bootError');
+    const bootOk  = document.getElementById('bootOk');
+    const nombre  = document.getElementById('bootNombre').value.trim();
+    const pwd     = document.getElementById('bootPwd').value;
+    const conf    = document.getElementById('bootPwdConf').value;
+
+    bootErr.hidden = true; bootOk.hidden = true;
+
+    if (!nombre || !/^[a-z0-9_]{3,30}$/i.test(nombre)) {
+      bootErr.textContent = '⚠️ Nombre inválido (3–30 caracteres, letras/números/_)';
+      bootErr.hidden = false; return;
+    }
+    if (pwd.length < 6) {
+      bootErr.textContent = '⚠️ La contraseña debe tener al menos 6 caracteres';
+      bootErr.hidden = false; return;
+    }
+    if (pwd !== conf) {
+      bootErr.textContent = '⚠️ Las contraseñas no coinciden';
+      bootErr.hidden = false; return;
+    }
+
+    try {
+      const u = await registrarUsuario(nombre, 'Gerente', pwd);
+      log(`Gerente Inicial creado: ${u.nombre}`, 'ok');
+      bootOk.textContent = `✅ Gerente Inicial "${u.nombre}" creado exitosamente. Ahora inicia sesión.`;
+      bootOk.hidden = false;
+
+      setTimeout(() => {
+        verificarPantallaInicial();
+        document.getElementById('inputUsuario').value = u.nombre;
+        document.getElementById('inputPassword').focus();
+        snack(`✅ Gerente "${u.nombre}" registrado. Inicia sesión.`);
+      }, 1500);
+    } catch (err) {
+      bootErr.textContent = '⚠️ ' + err.message; bootErr.hidden = false;
+    }
+  });
+
+  // Strength checkers
+  const bootPwd = document.getElementById('bootPwd');
+  bootPwd?.addEventListener('input', () => {
+    const f = evaluarFuerza(bootPwd.value);
+    const b = document.getElementById('bootStrengthBar'), l = document.getElementById('bootStrengthLabel');
+    if (b) { b.style.width = f.pct + '%'; b.style.backgroundColor = f.color; }
+    if (l) l.textContent = f.label;
+  });
+
+  document.getElementById('btnBootEye1')?.addEventListener('click', () => {
+    const i = document.getElementById('bootPwd'); i.type = i.type === 'password' ? 'text' : 'password';
+  });
+  document.getElementById('btnBootEye2')?.addEventListener('click', () => {
+    const i = document.getElementById('bootPwdConf'); i.type = i.type === 'password' ? 'text' : 'password';
   });
 
   // Login Submit (Verificación manual de credenciales PBKDF2)
-  document.getElementById('loginForm').addEventListener('submit', async e => {
+  document.getElementById('loginForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const usr = document.getElementById('inputUsuario').value.trim();
     const pwd = document.getElementById('inputPassword').value;
@@ -695,13 +784,11 @@ function bindEvents() {
 
     if (!usr) {
       errEl.textContent = '⚠️ Ingresa tu nombre de usuario';
-      errEl.hidden = false;
-      return;
+      errEl.hidden = false; return;
     }
     if (!pwd) {
       errEl.textContent = '⚠️ Ingresa tu contraseña';
-      errEl.hidden = false;
-      return;
+      errEl.hidden = false; return;
     }
 
     errEl.hidden = true; btnTxt.textContent = 'Verificando…'; spin.hidden = false;
@@ -719,59 +806,8 @@ function bindEvents() {
     mostrarApp();
   });
 
-  // Registro Submit
-  document.getElementById('registroForm')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const regError = document.getElementById('regError'), regOk = document.getElementById('regOk');
-    const btnTxt = document.getElementById('regBtnTxt'), btnSpin = document.getElementById('regSpinner'), btnReg = document.getElementById('btnRegistrar');
-    regError.hidden = true; regOk.hidden = true;
-
-    const nombre = document.getElementById('regNombre').value.trim();
-    const rol    = document.getElementById('regRol').value;
-    const pwd    = document.getElementById('regPwd').value;
-    const conf   = document.getElementById('regPwdConf').value;
-    const codigo = document.getElementById('regCodigo').value;
-
-    if (!nombre || !/^[a-z0-9_]{3,30}$/i.test(nombre)) return showRegErr('Nombre inválido (3–30 chars)');
-    if (!rol) return showRegErr('Selecciona un rol');
-    if (pwd.length < 6) return showRegErr('Contraseña mínimo 6 caracteres');
-    if (pwd !== conf) return showRegErr('Las contraseñas no coinciden');
-    if (codigo !== CODIGO_ACT) return showRegErr('Código de activación incorrecto');
-
-    btnReg.disabled = true; btnTxt.textContent = 'Derivando PBKDF2…'; btnSpin.hidden = false;
-    try {
-      const u = await registrarUsuario(nombre, rol, pwd);
-      log(`Usuario registrado: ${u.nombre} [${u.rol}]`, 'ok');
-      regOk.textContent = `✅ Usuario "${u.nombre}" creado [${u.rol}]`; regOk.hidden = false;
-      setTimeout(() => {
-        document.getElementById('tabLogin').click();
-        document.getElementById('inputUsuario').value = u.nombre;
-        document.getElementById('inputPassword').focus();
-        actualizarSourceLabel(); snack(`✅ Usuario "${u.nombre}" registrado. Ahora inicia sesión.`);
-      }, 1500);
-    } catch (err) { showRegErr(err.message); }
-    finally { btnReg.disabled = false; btnTxt.textContent = '🔐 Crear Cuenta con PBKDF2'; btnSpin.hidden = true; }
-
-    function showRegErr(m) { regError.textContent = '⚠️ ' + m; regError.hidden = false; }
-  });
-
-  // Strength checkers
-  const regPwd = document.getElementById('regPwd');
-  regPwd?.addEventListener('input', () => {
-    const f = evaluarFuerza(regPwd.value);
-    const b = document.getElementById('regStrengthBar'), l = document.getElementById('regStrengthLabel');
-    if (b) { b.style.width = f.pct + '%'; b.style.backgroundColor = f.color; }
-    if (l) l.textContent = f.label;
-  });
-
   document.getElementById('btnTogglePwd')?.addEventListener('click', () => {
     const i = document.getElementById('inputPassword'); i.type = i.type === 'password' ? 'text' : 'password';
-  });
-  document.getElementById('btnRegEye1')?.addEventListener('click', () => {
-    const i = document.getElementById('regPwd'); i.type = i.type === 'password' ? 'text' : 'password';
-  });
-  document.getElementById('btnRegEye2')?.addEventListener('click', () => {
-    const i = document.getElementById('regPwdConf'); i.type = i.type === 'password' ? 'text' : 'password';
   });
 
   document.getElementById('btnLogout')?.addEventListener('click', cerrarSesion);
@@ -814,7 +850,7 @@ function bindEvents() {
     if (!await verifyCommand(payload, firma)) return;
     if (EST.portonEstado === 'cerrado') { EST.portonEstado = 'abriendo'; setTimeout(() => { EST.portonEstado = 'abierto'; EST.FCA = true; actualizarUI(); }, 1600); }
     else if (EST.portonEstado === 'abierto') cerrarPorton();
-    snack('🚧 Portón forzado manualmente'); log('Portón forzado por el Ingeniero', 'warn'); actualizarUI();
+    snack('🚧 Portón forzado manualmente'); log('Portón forzado por el Supervisor', 'warn'); actualizarUI();
   });
 
   document.getElementById('btnAplicarTiempos')?.addEventListener('click', async () => {
@@ -837,11 +873,15 @@ function bindEvents() {
 
   // Admin Modal Trigger
   const modal = document.getElementById('adminModal');
-  const openModal = () => { renderAdminTabla(); modal.hidden = false; };
+  const openModal = () => {
+    if (!puedeDo('crearUsuario')) { snack('⛔ Sin permisos para crear usuarios'); return; }
+    configurarModalCrearRol();
+    renderAdminTabla();
+    modal.hidden = false;
+  };
   const closeModal = () => { modal.hidden = true; };
 
-  document.getElementById('btnOpenAdminNav')?.addEventListener('click', openModal);
-  document.getElementById('btnOpenAdminFromLogin')?.addEventListener('click', openModal);
+  document.getElementById('btnOpenCrearUsuario')?.addEventListener('click', openModal);
   document.getElementById('btnCloseAdminModal')?.addEventListener('click', closeModal);
   document.getElementById('btnReturnToLogin')?.addEventListener('click', closeModal);
 
@@ -849,7 +889,7 @@ function bindEvents() {
     if (e.target === modal) closeModal();
   });
 
-  // Admin Form Submit inside Modal
+  // Admin Form Submit inside Modal (Crear Usuario según Rol activo)
   document.getElementById('adminCrearForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const errE = document.getElementById('admError'), okE = document.getElementById('admOk');
@@ -860,16 +900,26 @@ function bindEvents() {
     const pwd    = document.getElementById('admPwd').value;
     const conf   = document.getElementById('admPwdConf').value;
 
-    if (!nombre || !/^[a-z0-9_]{3,30}$/i.test(nombre)) return showAdmErr('Nombre inválido');
-    if (!rol) return showAdmErr('Selecciona un rol');
+    if (!nombre || !/^[a-z0-9_]{3,30}$/i.test(nombre)) return showAdmErr('Nombre inválido (3-30 caracteres, letras/números/_)');
+    if (!rol) return showAdmErr('Selecciona un rol válido');
     if (pwd.length < 6) return showAdmErr('Contraseña mínimo 6 caracteres');
-    if (pwd !== conf) return showAdmErr('Contraseñas no coinciden');
+    if (pwd !== conf) return showAdmErr('Las contraseñas no coinciden');
+
+    // Validación estricta de jerarquía en backend JS
+    const rolActivo = sesion?.rol;
+    if (rolActivo === 'Gerente') {
+      if (!['Supervisor', 'Operador'].includes(rol)) return showAdmErr('Un Gerente sólo puede crear usuarios Supervisor u Operador');
+    } else if (rolActivo === 'Supervisor' || rolActivo === 'Ingeniero') {
+      if (rol !== 'Operador') return showAdmErr('Un Supervisor sólo puede crear usuarios Operador');
+    } else {
+      return showAdmErr('No tienes permiso para crear usuarios');
+    }
 
     try {
       const u = await registrarUsuario(nombre, rol, pwd);
-      okE.textContent = `✅ Usuario "${u.nombre}" creado con hash PBKDF2`; okE.hidden = false;
+      okE.textContent = `✅ Usuario "${u.nombre}" [${u.rol}] creado con hash PBKDF2`; okE.hidden = false;
       document.getElementById('adminCrearForm').reset();
-      renderAdminTabla(); actualizarSourceLabel();
+      renderAdminTabla();
       setTimeout(() => { okE.hidden = true; }, 3000);
     } catch (err) { showAdmErr(err.message); }
 
@@ -885,28 +935,9 @@ function bindEvents() {
 async function init() {
   await initHmacKey();
   resizeCanvas();
-  bindEvents();
   cargarUsuariosLocales();
-  poblarSelectorUsuarios();
-  renderAdminTabla();
-
-  // Forzar que la pantalla inicial sea SIEMPRE el Inicio de Sesión
-  const authOverlay   = document.getElementById('authOverlay');
-  const mainApp       = document.getElementById('app');
-  const adminModal    = document.getElementById('adminModal');
-  const panelLogin    = document.getElementById('panelLogin');
-  const panelRegistro = document.getElementById('panelRegistro');
-  const tabLogin      = document.getElementById('tabLogin');
-  const tabRegistro   = document.getElementById('tabRegistro');
-
-  if (authOverlay)   authOverlay.hidden = false;
-  if (mainApp)       mainApp.hidden = true;
-  if (adminModal)    adminModal.hidden = true;
-  if (panelLogin)    panelLogin.hidden = false;
-  if (panelRegistro) panelRegistro.hidden = true;
-  if (tabLogin)      tabLogin.classList.add('active');
-  if (tabRegistro)   tabRegistro.classList.remove('active');
-
+  bindEvents();
+  verificarPantallaInicial();
   resetSistema();
   renderLoop();
 }

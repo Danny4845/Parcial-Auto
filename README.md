@@ -9,52 +9,50 @@
 
 ## 📌 Resumen del Proyecto
 
-Este sistema consiste en una solución **SCADA / HMI Ciberfísica Web Unificada** para la automatización y control de acceso a un estacionamiento de 100 plazas, desarrollado conforme a los requerimientos técnicos y esquemas de tiempo especificados en el III Parcial.
+Este sistema consiste en una solución **SCADA / HMI Ciberfísica Web Unificada** para la automatización y control de acceso a un estacionamiento de 100 plazas, desarrollado conforme a los requerimientos técnicos y la **pirámide estricta de seguridad en automatización industrial**.
 
-Toda la aplicación está consolidada en un **único archivo de entrada (`index.html`)**. La gestión y persistencia de usuarios funciona **100% de forma automática mediante `localStorage`**, permitiendo registrar o crear usuarios desde la interfaz o el modal Admin y disponer de ellos inmediatamente sin importar/exportar archivos externos.
-
----
-
-## 🚀 Características Principales y Funcionalidades
-
-### 1. 🎨 Interfaz HMI & Animación en Canvas 2D
-- **Representación fiel al plano del enunciado:**
-  - Zona de Garaje de 100 plazas con borde naranja.
-  - Paso peatonal (Crosswalk) central con portón de barras verticales.
-  - Carriles de entrada y salida en disposición diagonal.
-  - Sensores fotoeléctricos (`E1`, `E2`, `S1`, `S2`) y finales de carrera (`FCA` arriba, `FCC` abajo).
-  - Semáforos industriales: `S.P.` (Peatonal), `S.E.` (Entrada, incluye LED Azul para plazas disponibles) y `S.S.` (Salida).
-- **Animación en tiempo real:** Simulación gráfica interactiva de vehículos ingresando y saliendo con actualización mediante `requestAnimationFrame`.
-
-### 2. ⏱️ Lógica del Proceso Industrial & Tiempos (PA)
-- **Semáforo Peatonal (S.P.):** Ciclo continuo con temporizador ajustable (Default: 20s Verde / 40s Rojo).
-- **Ventana de Permiso de Acceso (P.A.):**
-  - Se activa **4 segundos después** de que S.P. pasa a **ROJO**.
-  - Se desactiva **6 segundos antes** de que S.P. regrese a **VERDE** (cerrando el portón preventivamente por seguridad peatonal).
-- **Prioridad de Salida:** Las solicitudes de salida (`S1`) tienen prioridad absoluta sobre los vehículos en espera de entrada (`E1`).
-
-### 3. 🛡️ Ciberseguridad Industrial
-- **Autenticación Fuerte (PBKDF2):**
-  - Algoritmo: `PBKDF2` con `SHA-256`, 100.000 iteraciones y Salt aleatorio de 16 bytes.
-  - Implementado con la **Web Crypto API nativa** de JavaScript (`window.crypto.subtle`).
-- **Ciclo Completo de Autenticación Academic-Grade:**
-  - **Registro (Sign-Up):** Registro de nuevos usuarios con código de activación administrativo (`admin2026`), validación de duplicados y medidor de fuerza de contraseña.
-  - **Persistencia Automática:** Toda cuenta registrada se persiste automáticamente en `localStorage` con su salt y hash derivado.
-- **Firma Criptográfica HMAC-SHA256 (Anti-Tampering):**
-  - Cada comando enviado desde la interfaz (`INICIO`, `RESET`, `SIM_E1`, `SIM_S1`, etc.) es firmado con una clave HMAC única generada por sesión.
-- **Panel de Administración Modal:** Accesible directamente con el botón **🛡️ Admin** en el Header o pantalla de acceso para crear, ver y eliminar usuarios en tiempo real.
+Toda la aplicación está consolidada en un **único archivo de entrada (`index.html`)**, sin usuarios hardcodeados, ofreciendo un flujo de bootstrapping de seguridad y gestión jerárquica de accesos basada en roles (RBAC).
 
 ---
 
-## 📂 Estructura Simplificada del Proyecto
+## 🚀 Jerarquía de Seguridad & Roles Industrial (RBAC)
+
+### 1. ⚠️ Configuración Inicial de Arranque (Bootstrapping)
+- Si el sistema arranca y **NO existe ningún usuario Gerente** en el almacenamiento:
+  - La pantalla inicial muestra un aviso de alerta: *"⚠️ Configuración Inicial Requerida: No existe ningún usuario Gerente registrado. Debes crear el Gerente inicial para activar el sistema SCADA."*
+  - Se registra el Gerente inicial con derivación criptográfica **PBKDF2 (100.000 iter, SHA-256, Salt 16B)**.
+- Una vez registrado el Gerente inicial, la pantalla inicial cambia **únicamente a Iniciar Sesión** (sin registros públicos abiertos).
+
+### 2. 🔐 Reglas Estrictas de Creación de Usuarios por Rol
+- 🟡 **Gerente (Nivel ERP / Máximo):**
+  - Acceso total a métricas de consumo de energía, volumen de tráfico y log de auditoría.
+  - Puede crear usuarios únicamente con el rol de **Supervisor** (Ingeniero) o **Operador**.
+- 🔵 **Supervisor / Ingeniero (Nivel Planta):**
+  - Acceso a forzado manual de portón, modificación de tiempos del semáforo peatonal (SP) y log de auditoría.
+  - Puede crear usuarios únicamente con el rol de **Operador**.
+- 🟢 **Operador (Nivel Control):**
+  - Acceso a mandos operativos (Inicio, Reset, Simulación E1/S1).
+  - **No puede crear ningún usuario** (no tiene acceso al botón ni modal de creación).
+
+---
+
+## 🛡️ Ciberseguridad Industrial Integrada
+
+- **PBKDF2 con SHA-256 (100.000 iteraciones):** Derivación nativa con Web Crypto API. Sin contraseñas en texto plano.
+- **Firma Criptográfica HMAC-SHA256 (Anti-Tampering):** Firma de comandos (`INICIO`, `RESET`, `SIM_E1`, `SIM_S1`, `FORZAR_PORTON`, `AJUSTAR_TIEMPOS`) que previene manipulación desde las DevTools del navegador.
+- **Persistencia en LocalStorage:** Almacenamiento seguro y automático de hashes y salts.
+
+---
+
+## 📂 Estructura del Proyecto
 
 ```
 Automatizacion parcial/
-├── index.html       ← Aplicación Unificada (Login, Registro, SCADA Dashboard & Modal Admin)
-├── style.css        ← Estilos Industriales Dark Mode Integrados
-├── app.js           ← Lógica Completa (Auth PBKDF2, HMAC, Motor Canvas 2D, SCADA & Admin)
-├── README.md        ← Documentación técnica académica
-└── plan_de_verificacion.txt ← Plan de pruebas
+├── index.html                  ← Aplicación Unificada (Setup Gerente, Login, Dashboard SCADA & Modal Crear Usuario)
+├── style.css                   ← Estilos Industriales Dark Mode Integrados
+├── app.js                      ← Lógica Completa (PBKDF2, HMAC, Jerarquía RBAC, Motor Canvas 2D)
+├── README.md                   ← Documentación técnica académica
+└── plan_de_verificacion.txt    ← Protocolo de pruebas
 ```
 
 ---
@@ -62,9 +60,6 @@ Automatizacion parcial/
 ## 💻 Instrucciones de Ejecución
 
 1. Abra la carpeta `Automatizacion parcial`.
-2. Haga **doble clic en `index.html`** (se abrirá directamente en Opera GX, Chrome, Edge o Firefox).
-3. **Credenciales de demostración pre-configuradas:**
-   - **Operador:** `operador1` / `oper2026`
-   - **Ingeniero:** `ingeniero1` / `ing2026`
-   - **Gerente:** `gerente1` / `ger2026`
-4. **Código de Activación para Registro:** `admin2026`
+2. Haga **doble clic en `index.html`** en Opera GX, Chrome, Edge o Firefox.
+3. **Primer Arranque (Sin Gerente):** Complete el formulario inicial para registrar el Gerente de Planta.
+4. **Inicio de Sesión:** Ingrese las credenciales del Gerente creado para acceder al Dashboard SCADA.

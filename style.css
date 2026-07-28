@@ -63,6 +63,15 @@ html, body {
   backdrop-filter: blur(12px);
 }
 
+.bootstrap-banner {
+  background: rgba(255,140,0,0.12); border: 1px solid rgba(255,140,0,0.4);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  color: #ffaa33; font-size: .82rem; line-height: 1.45; margin-bottom: 16px;
+  animation: fadeIn .2s ease;
+}
+
+.rol-Supervisor { background: rgba(0,229,255,0.15); color: var(--cyan); }
+
 .auth-logo { text-align: center; margin-bottom: 20px; }
 .logo-icon { font-size: 2.4rem; margin-bottom: 6px; }
 .auth-logo h1 { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); letter-spacing: -.3px; }

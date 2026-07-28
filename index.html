@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SCADA — Control de Acceso de Estacionamiento | III Parcial</title>
-  <meta name="description" content="Sistema SCADA/HMI Ciberfísico para control de acceso a estacionamiento automatizado con PBKDF2, HMAC y RBAC." />
+  <meta name="description" content="Sistema SCADA/HMI Ciberfísico para control de acceso a estacionamiento automatizado con PBKDF2, HMAC y RBAC por Jerarquía." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       1. OVERLAY DE AUTENTICACIÓN (LOGIN / REGISTRO)
+       1. OVERLAY DE AUTENTICACIÓN / BOOTSTRAP GERENTE
        ═══════════════════════════════════════════════════════════════════ -->
   <div id="authOverlay" class="auth-overlay">
     <div class="auth-card">
@@ -18,23 +18,62 @@
         <div class="logo-icon">🏗️</div>
         <h1>SCADA Industrial</h1>
         <p class="auth-subtitle">Control de Acceso — Estacionamiento 100 Plazas</p>
-        <div class="security-badge">🔒 PBKDF2 · SHA-256 · HMAC · RBAC</div>
+        <div class="security-badge">🔒 PBKDF2 · SHA-256 · HMAC · RBAC Estricto</div>
       </div>
 
-      <!-- TABS DE NAVEGACIÓN -->
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin"    data-tab="login">🔑 Iniciar Sesión</button>
-        <button class="auth-tab"        id="tabRegistro" data-tab="registro">➕ Registrar</button>
+      <!-- ══ VISTA A: BOOTSTRAP GERENTE (Aparece sólo si NO hay Gerente) ══ -->
+      <div id="panelBootstrapGerente" class="tab-panel" hidden>
+        <div class="bootstrap-banner">
+          ⚠️ <strong>Configuración Inicial Requerida:</strong><br>
+          No existe ningún usuario <strong>Gerente</strong> registrado. Debes crear el Gerente Inicial para activar el sistema SCADA.
+        </div>
+
+        <form id="bootstrapGerenteForm" class="auth-form" autocomplete="off">
+          <div class="field-group">
+            <label for="bootNombre">Nombre del Gerente Inicial</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input type="text" id="bootNombre" placeholder="ej: gerente1" maxlength="30" spellcheck="false" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="bootPwd">Contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔑</span>
+              <input type="password" id="bootPwd" placeholder="mínimo 6 caracteres" autocomplete="new-password" />
+              <button type="button" class="toggle-pwd" id="btnBootEye1">👁</button>
+            </div>
+            <div class="pwd-strength-bar"><div id="bootStrengthBar" class="pwd-strength-fill"></div></div>
+            <span class="field-hint dim" id="bootStrengthLabel"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="bootPwdConf">Confirmar Contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✅</span>
+              <input type="password" id="bootPwdConf" placeholder="repite contraseña" autocomplete="new-password" />
+              <button type="button" class="toggle-pwd" id="btnBootEye2">👁</button>
+            </div>
+          </div>
+
+          <div id="bootError" class="auth-error" hidden></div>
+          <div id="bootOk"    class="auth-ok"    hidden></div>
+
+          <button type="submit" id="btnCrearGerenteBoot" class="btn-primary btn-green">
+            <span>🔐 Registrar Gerente Inicial (PBKDF2)</span>
+          </button>
+        </form>
       </div>
 
-      <!-- ══ TAB 1: LOGIN ══ -->
+      <!-- ══ VISTA B: INICIO DE SESIÓN (Aparece cuando YA existe Gerente) ══ -->
       <div id="panelLogin" class="tab-panel">
         <form id="loginForm" class="auth-form" autocomplete="off">
           <div class="field-group">
             <label for="inputUsuario">Nombre de Usuario</label>
             <div class="input-wrapper">
               <span class="input-icon">👤</span>
-              <input type="text" id="inputUsuario" placeholder="ej: operador1" autocomplete="username" spellcheck="false" />
+              <input type="text" id="inputUsuario" placeholder="ingresa tu usuario" autocomplete="username" spellcheck="false" />
             </div>
           </div>
 
@@ -42,7 +81,7 @@
             <label for="inputPassword">Contraseña</label>
             <div class="input-wrapper">
               <span class="input-icon">🔑</span>
-              <input type="password" id="inputPassword" placeholder="contraseña" autocomplete="current-password" />
+              <input type="password" id="inputPassword" placeholder="ingresa tu contraseña" autocomplete="current-password" />
               <button type="button" id="btnTogglePwd" class="toggle-pwd" title="Mostrar contraseña">👁</button>
             </div>
           </div>
@@ -54,80 +93,6 @@
             <div id="loginSpinner" class="spinner" hidden></div>
           </button>
         </form>
-
-        <div class="auth-footer">
-          <button id="btnOpenAdminFromLogin" class="link-admin-btn">🛡️ Panel Admin</button>
-          <span id="loginUserHint" class="user-hint">operador1 · ingeniero1 · gerente1</span>
-        </div>
-      </div>
-
-      <!-- ══ TAB 2: REGISTRO ══ -->
-      <div id="panelRegistro" class="tab-panel" hidden>
-        <form id="registroForm" class="auth-form" autocomplete="off">
-          <div class="field-group">
-            <label for="regNombre">Nombre de usuario</label>
-            <div class="input-wrapper">
-              <span class="input-icon">👤</span>
-              <input type="text" id="regNombre" placeholder="ej: operador2" maxlength="30" spellcheck="false" autocomplete="off" />
-            </div>
-            <span class="field-hint" id="regHintNombre"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="regRol">Rol industrial</label>
-            <div class="input-wrapper">
-              <span class="input-icon">🏭</span>
-              <select id="regRol">
-                <option value="">— seleccionar rol —</option>
-                <option value="Operador">Operador (Nivel Control)</option>
-                <option value="Ingeniero">Ingeniero / Supervisor (Nivel Planta)</option>
-                <option value="Gerente">Gerente (Nivel ERP)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label for="regPwd">Contraseña</label>
-            <div class="input-wrapper">
-              <span class="input-icon">🔑</span>
-              <input type="password" id="regPwd" placeholder="mínimo 6 caracteres" autocomplete="new-password" />
-              <button type="button" class="toggle-pwd" id="btnRegEye1">👁</button>
-            </div>
-            <div class="pwd-strength-bar"><div id="regStrengthBar" class="pwd-strength-fill"></div></div>
-            <span class="field-hint dim" id="regStrengthLabel"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="regPwdConf">Confirmar contraseña</label>
-            <div class="input-wrapper">
-              <span class="input-icon">✅</span>
-              <input type="password" id="regPwdConf" placeholder="repite la contraseña" autocomplete="new-password" />
-              <button type="button" class="toggle-pwd" id="btnRegEye2">👁</button>
-            </div>
-            <span class="field-hint" id="regHintConf"></span>
-          </div>
-
-          <div class="field-group">
-            <label for="regCodigo">Código de activación <span class="admin-only-tag">admin</span></label>
-            <div class="input-wrapper">
-              <span class="input-icon">🛡️</span>
-              <input type="password" id="regCodigo" placeholder="código administrativo" autocomplete="off" />
-            </div>
-            <span class="field-hint dim">Código: admin2026 (ICS Security)</span>
-          </div>
-
-          <div id="regError" class="auth-error" hidden></div>
-          <div id="regOk"    class="auth-ok"    hidden></div>
-
-          <button type="submit" id="btnRegistrar" class="btn-primary btn-green">
-            <span id="regBtnTxt">🔐 Crear Cuenta con PBKDF2</span>
-            <div id="regSpinner" class="spinner" hidden></div>
-          </button>
-        </form>
-
-        <div class="reg-footer">
-          <span class="reg-note">🔒 Contraseña derivada con PBKDF2 (100k iter, SHA-256). Nunca en texto plano.</span>
-        </div>
       </div>
 
     </div>
@@ -163,11 +128,11 @@
         <div class="user-chip">
           <div class="user-avatar" id="userAvatar">O</div>
           <div class="user-info">
-            <span id="displayNombre" class="user-name">operador1</span>
-            <span id="displayRol" class="user-rol rol-badge rol-Operador">Operador</span>
+            <span id="displayNombre" class="user-name">usuario</span>
+            <span id="displayRol" class="user-rol rol-badge">Rol</span>
           </div>
         </div>
-        <button id="btnOpenAdminNav" class="btn-admin-nav" title="Gestión de Usuarios">🛡️ Admin</button>
+        <button id="btnOpenCrearUsuario" class="btn-admin-nav" hidden>➕ Crear Usuario</button>
         <button id="btnLogout" class="btn-logout" title="Cerrar Sesión">🚪</button>
       </div>
     </header>
@@ -235,11 +200,11 @@
           </div>
         </div>
 
-        <!-- CARD 4: PANEL INGENIERO (Solo Ingeniero) -->
+        <!-- CARD 4: PANEL SUPERVISOR / INGENIERO -->
         <div id="panelIngeniero" class="scada-card card-engineer" hidden>
           <div class="card-header">
             <span class="card-icon">🔧</span>
-            <span>Panel del Ingeniero</span>
+            <span>Panel del Supervisor</span>
           </div>
           <div class="eng-controls">
             <button id="btnForzarPorton" class="btn-ctrl btn-warn">🚧 Forzar Abrir/Cerrar Portón</button>
@@ -309,14 +274,14 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       3. MODAL DEL PANEL DE ADMINISTRACIÓN (ADMIN MODAL)
+       3. MODAL DE CREACIÓN DE USUARIOS POR ROL (JERARQUÍA ESTRICTA)
        ═══════════════════════════════════════════════════════════════════ -->
   <div id="adminModal" class="modal-overlay" hidden>
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title">
-          <span>🛡️ Panel de Administración de Usuarios</span>
-          <span class="sec-badge">PBKDF2 · SHA-256 · 100k iter</span>
+          <span>➕ Crear Nuevo Usuario</span>
+          <span class="sec-badge" id="modalSecBadge">Jerarquía por Rol</span>
         </div>
         <button id="btnCloseAdminModal" class="btn-close-modal">✕ Cerrar</button>
       </div>
@@ -326,28 +291,23 @@
         <!-- CREAR USUARIO (IZQ) -->
         <div class="modal-col-left">
           <form id="adminCrearForm" class="auth-form" autocomplete="off">
-            <h3>➕ Crear Nuevo Usuario</h3>
-
             <div class="field-group">
               <label for="admNombre">Nombre de usuario</label>
               <div class="input-wrapper">
                 <span class="input-icon">👤</span>
-                <input type="text" id="admNombre" placeholder="ej: operador3" maxlength="30" autocomplete="off" />
+                <input type="text" id="admNombre" placeholder="ej: operador2" maxlength="30" autocomplete="off" />
               </div>
-              <span class="field-hint" id="admHintNombre"></span>
             </div>
 
             <div class="field-group">
-              <label for="admRol">Rol asignado</label>
+              <label for="admRol">Rol a Asignar</label>
               <div class="input-wrapper">
                 <span class="input-icon">🏷️</span>
                 <select id="admRol">
-                  <option value="">— seleccionar —</option>
-                  <option value="Operador">Operador (Nivel Control)</option>
-                  <option value="Ingeniero">Ingeniero (Nivel Planta)</option>
-                  <option value="Gerente">Gerente (Nivel ERP)</option>
+                  <!-- Se llena dinámicamente según el rol activo -->
                 </select>
               </div>
+              <span class="field-hint dim" id="admRolHint"></span>
             </div>
 
             <div class="field-group">
@@ -380,11 +340,11 @@
           </form>
         </div>
 
-        <!-- LISTA USUARIOS + ESTADO LOCALSTORAGE (DER) -->
+        <!-- LISTA DE USUARIOS CREADOS (DER) -->
         <div class="modal-col-right">
           <div class="users-toolbar">
             <div class="users-count">
-              <span id="totalUsuarios">0</span> usuario(s) en base de datos
+              <span id="totalUsuarios">0</span> usuario(s) registrados
             </div>
             <div class="toolbar-actions">
               <span class="sec-badge" style="background:rgba(0,230,118,0.1); border-color:rgba(0,230,118,0.3); color:var(--green)">
@@ -417,7 +377,7 @@
       </div>
 
       <div class="modal-footer-bar">
-        <button id="btnReturnToLogin" class="btn-return-login">⬅️ Volver a Iniciar Sesión</button>
+        <button id="btnReturnToLogin" class="btn-return-login">⬅️ Volver al SCADA</button>
       </div>
     </div>
   </div>
