@@ -660,60 +660,13 @@ function renderAdminTabla() {
   }
 
   setEl('totalUsuarios', USUARIOS_BD.length);
-  poblarSelectorUsuarios();
-}
-
-function poblarSelectorUsuarios() {
-  const sel   = document.getElementById('selectUsuario');
-  const pills = document.getElementById('quickDemoPills');
-  const hint  = document.getElementById('loginUserHint');
-
-  if (hint) {
-    hint.textContent = USUARIOS_BD.map(u => u.nombre).slice(0, 5).join(' · ');
-  }
-
-  if (sel) {
-    sel.innerHTML = '<option value="">— Seleccionar usuario registrado —</option>' +
-      USUARIOS_BD.map(u => `<option value="${u.nombre}">${u.nombre} (${u.rol})</option>`).join('');
-  }
-
-  if (pills) {
-    const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
-    pills.innerHTML = USUARIOS_BD.map(u => {
-      const pwd = demoPwds[u.nombre] || '';
-      const icon = u.rol === 'Operador' ? '🟢' : u.rol === 'Ingeniero' ? '🔵' : '🟡';
-      return `<button type="button" class="demo-pill" data-usr="${u.nombre}" data-pwd="${pwd}">${icon} ${u.nombre} [${u.rol}]</button>`;
-    }).join('');
-
-    pills.querySelectorAll('.demo-pill').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const u = btn.dataset.usr;
-        const p = btn.dataset.pwd;
-        await iniciarSesionDirecta(u, p);
-      });
-    });
-  }
-}
-
-async function iniciarSesionDirecta(nombre, password) {
-  const inputU = document.getElementById('inputUsuario');
-  const inputP = document.getElementById('inputPassword');
-  if (inputU) inputU.value = nombre;
-  if (inputP && password) inputP.value = password;
-
-  let u = await autenticar(nombre, password || '');
-  if (!u) {
-    u = USUARIOS_BD.find(x => x.nombre === nombre.trim().toLowerCase());
-  }
-  if (u) {
-    sesion = { nombre: u.nombre, rol: u.rol };
-    mostrarApp();
-    snack(`✅ Sesión iniciada: ${u.nombre} [${u.rol}]`);
-  }
 }
 
 function actualizarSourceLabel() {
-  poblarSelectorUsuarios();
+  const hint = document.getElementById('loginUserHint');
+  if (hint) {
+    hint.textContent = USUARIOS_BD.map(u => u.nombre).slice(0, 5).join(' · ');
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -731,15 +684,7 @@ function bindEvents() {
     });
   });
 
-  // Selector de usuario combo -> Login directo
-  document.getElementById('selectUsuario')?.addEventListener('change', async e => {
-    const val = e.target.value;
-    if (!val) return;
-    const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
-    await iniciarSesionDirecta(val, demoPwds[val] || '');
-  });
-
-  // Login Submit
+  // Login Submit (Verificación manual de credenciales PBKDF2)
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const usr = document.getElementById('inputUsuario').value.trim();
@@ -748,17 +693,19 @@ function bindEvents() {
     const btnTxt = document.getElementById('loginBtnText');
     const spin   = document.getElementById('loginSpinner');
 
-    if (!usr) { errEl.textContent = '⚠️ Ingresa o selecciona un usuario'; errEl.hidden = false; return; }
-
-    errEl.hidden = true; btnTxt.textContent = 'Verificando…'; spin.hidden = false;
-    let u = await autenticar(usr, pwd);
-
-    // Fallback para usuarios sin clave especificada
-    if (!u) {
-      const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
-      if (demoPwds[usr]) u = await autenticar(usr, demoPwds[usr]);
+    if (!usr) {
+      errEl.textContent = '⚠️ Ingresa tu nombre de usuario';
+      errEl.hidden = false;
+      return;
+    }
+    if (!pwd) {
+      errEl.textContent = '⚠️ Ingresa tu contraseña';
+      errEl.hidden = false;
+      return;
     }
 
+    errEl.hidden = true; btnTxt.textContent = 'Verificando…'; spin.hidden = false;
+    const u = await autenticar(usr, pwd);
     spin.hidden = true; btnTxt.textContent = '🔑 Iniciar Sesión';
 
     if (!u) {

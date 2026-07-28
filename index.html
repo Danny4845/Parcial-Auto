@@ -30,18 +30,6 @@
       <!-- ══ TAB 1: LOGIN ══ -->
       <div id="panelLogin" class="tab-panel">
         <form id="loginForm" class="auth-form" autocomplete="off">
-
-          <!-- Selector / Combo de Usuarios Disponibles -->
-          <div class="field-group">
-            <label for="selectUsuario">Seleccionar Usuario Registrado</label>
-            <div class="input-wrapper">
-              <span class="input-icon">📋</span>
-              <select id="selectUsuario">
-                <!-- Se llena dinámicamente con JavaScript -->
-              </select>
-            </div>
-          </div>
-
           <div class="field-group">
             <label for="inputUsuario">Nombre de Usuario</label>
             <div class="input-wrapper">
@@ -66,14 +54,6 @@
             <div id="loginSpinner" class="spinner" hidden></div>
           </button>
         </form>
-
-        <!-- Accesos directos 1-Click -->
-        <div class="quick-demo-title">⚡ Acceso Directo Inmediato (1-Clic):</div>
-        <div class="quick-demo-pills" id="quickDemoPills">
-          <button type="button" class="demo-pill pill-oper" data-usr="operador1" data-pwd="oper2026">🟢 Entrar como Operador</button>
-          <button type="button" class="demo-pill pill-ing"  data-usr="ingeniero1" data-pwd="ing2026">🔵 Entrar como Ingeniero</button>
-          <button type="button" class="demo-pill pill-ger"  data-usr="gerente1"   data-pwd="ger2026">🟡 Entrar como Gerente</button>
-        </div>
 
         <div class="auth-footer">
           <button id="btnOpenAdminFromLogin" class="link-admin-btn">🛡️ Panel Admin</button>
