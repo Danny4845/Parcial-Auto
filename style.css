@@ -1,13 +1,11 @@
-/* ══════════════════════════════════════════════════════════════════
-   SCADA Industrial — Tema Gris Industrial Visible & Colores Semánticos
-   ══════════════════════════════════════════════════════════════════ */
+/* Estilos Generales y Tema Gris Industrial */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 [hidden] { display: none !important; }
 
 :root {
-  /* Fondo Gris Industrial Altamente Visible */
+  /* Variables de Color (Gris Industrial y Turquesa Claro) */
   --bg-base:       #14171f;
   --bg-panel:      #1d212b;
   --bg-card:       #252a37;
@@ -16,19 +14,17 @@
   --border-dim:    #353c4e;
   --border-bright: #485269;
 
-  /* Turquesa Claro Accent Principal */
   --turquoise:       #4cd6c0;
   --turquoise-light: #70e7d7;
   --turquoise-dark:  #289988;
   --turquoise-glow:  rgba(76, 214, 192, 0.15);
 
-  /* Colores Semánticos Reales de Semáforo */
-  --sem-rojo:    #ff3344;
-  --sem-verde:   #00e676;
-  --sem-azul:    #3388ff;
+  /* Colores Semánticos del Semáforo */
+  --sem-rojo:     #ff3344;
+  --sem-verde:    #00e676;
+  --sem-azul:     #3388ff;
   --sem-amarillo: #ffaa00;
 
-  /* Texto */
   --text-primary:   #e4e8f0;
   --text-secondary: #9ba5b8;
   --text-dim:       #647087;
@@ -50,9 +46,7 @@ html, body {
   user-select: none;
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   1. AUTH OVERLAY & BOOTSTRAP (LOGIN)
-   ═══════════════════════════════════════════════════════════════════ */
+/* Pantalla de Autenticación y Registro Inicial */
 .auth-overlay {
   position: fixed; inset: 0; z-index: 1000;
   background: radial-gradient(circle at center, #242938, #11141c);
@@ -148,9 +142,7 @@ html, body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ═══════════════════════════════════════════════════════════════════
-   2. APP LAYOUT & HEADER
-   ═══════════════════════════════════════════════════════════════════ */
+/* Header y Barra Superior */
 .app { display: flex; flex-direction: column; height: 100vh; background: var(--bg-base); }
 
 .app-header {
@@ -219,9 +211,7 @@ html, body {
 }
 .btn-logout:hover { border-color: var(--border-bright); color: var(--text-primary); }
 
-/* ═══════════════════════════════════════════════════════════════════
-   3. DASHBOARD MAIN & PANELS
-   ═══════════════════════════════════════════════════════════════════ */
+/* Dashboard Principal */
 .dashboard { display: grid; grid-template-columns: 280px 1fr; flex: 1; overflow: hidden; padding: 12px; gap: 12px; }
 
 .control-panel { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
@@ -274,7 +264,7 @@ html, body {
 .time-adjust { display: flex; justify-content: space-between; align-items: center; font-size: .7rem; color: var(--text-secondary); }
 .time-adjust input { width: 50px; padding: 3px 6px; background: var(--bg-panel); border: 1px solid var(--border-dim); border-radius: 3px; color: var(--text-primary); font-family: var(--font-mono); text-align: center; }
 
-/* Canvas Panel */
+/* Canvas y Métricas */
 .canvas-panel { display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
 .canvas-wrapper {
   flex: 1; background: var(--bg-card); border: 1px solid var(--border-dim);
@@ -309,9 +299,7 @@ html, body {
 .log-entry.warn { border-left-color: var(--sem-amarillo); color: #ffe088; }
 .log-entry.error { border-left-color: var(--sem-rojo); color: #ff99aa; }
 
-/* ═══════════════════════════════════════════════════════════════════
-   4. MODAL ADMIN / GESTIÓN DE USUARIOS SEPARADA POR ROL
-   ═══════════════════════════════════════════════════════════════════ */
+/* Modal y Gestión de Usuarios */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 2000;
   background: rgba(17, 20, 28, 0.88); backdrop-filter: blur(6px);
@@ -371,7 +359,7 @@ html, body {
 }
 .btn-return-login:hover { background: rgba(76, 214, 192, 0.25); }
 
-/* Snackbar */
+/* Componente Snackbar */
 .snackbar {
   position: fixed; bottom: 20px; right: 20px; z-index: 3000;
   padding: 10px 18px; border-radius: var(--radius-sm); background: var(--bg-card);

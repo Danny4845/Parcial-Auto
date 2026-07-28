@@ -1,21 +1,13 @@
-/* ══════════════════════════════════════════════════════════════════
-   SCADA — Estacionamiento Automatizado · III Parcial
-   app.js — Jerarquía RBAC Estricta, 3 Listas Separadas por Rol & Semáforo Real
-   Equipo: Daniel Colmenares & Hernaldo Pérez Roa
-   ══════════════════════════════════════════════════════════════════ */
+/* SCADA Estacionamiento Automatizado — III Parcial (Daniel Colmenares & Hernaldo Pérez Roa) */
 
 'use strict';
 
-/* ═══════════════════════════════════════════════════════════════════
-   1. USUARIOS Y PERSISTENCIA (SIN USUARIOS HARDECODEADOS)
-   ═══════════════════════════════════════════════════════════════════ */
+// Configuración y Datos Locales
 const USUARIOS_DEMO = [];
 let USUARIOS_BD = [];
 const LS_KEY = 'scada_usuarios_registrados';
 
-/* ═══════════════════════════════════════════════════════════════════
-   2. CRIPTOGRAFÍA — HMAC & PBKDF2 (Web Crypto API)
-   ═══════════════════════════════════════════════════════════════════ */
+// Inicialización de Clave HMAC (Web Crypto API)
 let hmacKey = null;
 
 async function initHmacKey() {
@@ -24,6 +16,7 @@ async function initHmacKey() {
   );
 }
 
+// Firma y Verificación Criptográfica de Comandos
 async function signCommand(accion) {
   const nonce = crypto.randomUUID(), timestamp = Date.now();
   const payload = JSON.stringify({ accion, timestamp, nonce });
@@ -43,6 +36,7 @@ function b64ToBuf(b64) {
 }
 function bufToB64(buffer) { return btoa(String.fromCharCode(...new Uint8Array(buffer))); }
 
+// Derivación PBKDF2 (100.000 iteraciones, SHA-256)
 async function derivePBKDF2(password, saltB64) {
   const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
@@ -66,7 +60,7 @@ async function autenticar(nombre, password) {
   return h === u.hash ? u : null;
 }
 
-/* LocalStorage Manager */
+// Persistencia LocalStorage
 function cargarUsuariosLocales() {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -109,9 +103,7 @@ function evaluarFuerza(pwd) {
   return niveles[Math.min(s, 5)];
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   3. ESTADO GLOBAL DE SIMULACIÓN Y SCADA
-   ═══════════════════════════════════════════════════════════════════ */
+// Estado del Proceso SCADA
 let sesion = null;
 
 const EST = {
@@ -132,7 +124,7 @@ const EST = {
   totalEntradas: 0, totalSalidas: 0, ciclosPorton: 0
 };
 
-/* Log de auditoría */
+// Log de Auditoría
 const auditEntries = [];
 function log(msg, tipo = 'info') {
   const ts = new Date().toLocaleTimeString('es-VE', { hour12: false });
@@ -146,7 +138,7 @@ function log(msg, tipo = 'info') {
   while (el.children.length > 60) el.removeChild(el.lastChild);
 }
 
-/* RBAC Permisos */
+// Permisos y Matriz RBAC
 const PERMISOS = {
   Operador:   ['inicio', 'reset', 'simE1', 'simS1'],
   Supervisor: ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'crearUsuario'],
@@ -155,9 +147,7 @@ const PERMISOS = {
 };
 function puedeDo(accion) { return sesion && (PERMISOS[sesion.rol] || []).includes(accion); }
 
-/* ═══════════════════════════════════════════════════════════════════
-   4. CANVAS SCADA (Colores Reales de Semáforo: Rojo, Verde, Azul, Amarillo)
-   ═══════════════════════════════════════════════════════════════════ */
+// Renderizado Canvas 2D
 const canvas = document.getElementById('scadaCanvas');
 const ctx    = canvas.getContext('2d');
 
@@ -200,7 +190,6 @@ function drawScene() {
   drawCrosswalk(cwX, entY - lH / 2, cwW, lH + (salY - entY) + lH);
   drawPorton(cwX, entY - lH / 2, cwW, lH + (salY - entY) + lH);
 
-  // Semáforos con Colores Reales (Rojo / Verde / Azul)
   drawTrafficLight(cwX + cwW * 0.18, H * 0.03, 'S.P.', EST.semPeatonal, false);
   drawTrafficLight(cwX + cwW * 0.72, H * 0.03, 'S.E.', EST.semEntrada, true);
   drawTrafficLight(cwX + cwW * 0.45, H * 0.80, 'S.S.', EST.semSalida, false);
@@ -359,9 +348,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   5. LÓGICA DE SIMULACIÓN & PROCESO
-   ═══════════════════════════════════════════════════════════════════ */
+// Simulación y Control de Proceso
 function crearVehiculoEntrada() {
   const W = canvas.width, H = canvas.height;
   return { id: crypto.randomUUID(), tipo: 'entrada', x: W * 0.96, y: H * 0.36, color: '#3388ff', fase: 'llegando', speed: 2.2 };
@@ -525,9 +512,7 @@ function resetSistema() {
   log('Sistema -> Condiciones Iniciales (CI)', 'warn');
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   6. UI DOM UPDATES
-   ═══════════════════════════════════════════════════════════════════ */
+// Actualización DOM e Interfaz
 function actualizarUI() {
   const libres = 100 - EST.plazasOcupadas, pct = EST.plazasOcupadas;
   const disp = document.getElementById('plazasDisplay');
@@ -588,15 +573,13 @@ function aplicarRBAC() {
   const esGerente    = (rol === 'Gerente');
   const esOperador   = (rol === 'Operador');
 
-  // Paneles por rol
   const pi = document.getElementById('panelIngeniero'); if (pi) pi.hidden = !esSupervisor && !esGerente;
   const pg = document.getElementById('panelGerente');   if (pg) pg.hidden = !esGerente;
   const pl = document.getElementById('panelLog');       if (pl) pl.hidden = esOperador;
 
-  // Botón de Gestionar/Crear Usuarios en Header
   const btnCrear = document.getElementById('btnOpenCrearUsuario');
   if (btnCrear) {
-    btnCrear.hidden = esOperador; // Operador NO puede crear ni ver usuarios
+    btnCrear.hidden = esOperador;
   }
 
   const av = document.getElementById('userAvatar'); if (av) av.textContent = (sesion?.nombre?.[0] ?? '?').toUpperCase();
@@ -663,9 +646,7 @@ function verificarPantallaInicial() {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   7. ADMIN MODAL LOGIC (TABLAS SEPARADAS SEGÚN ROL)
-   ═══════════════════════════════════════════════════════════════════ */
+// Gestión de Tablas de Usuarios por Rol
 function renderAdminTabla() {
   const rolActivo = sesion?.rol;
 
@@ -679,7 +660,6 @@ function renderAdminTabla() {
 
   if (!bodyGer || !bodySup || !bodyOpe) return;
 
-  // Filtrado de usuarios por rol
   const gerentes     = USUARIOS_BD.filter(u => u.rol === 'Gerente');
   const supervisores = USUARIOS_BD.filter(u => u.rol === 'Supervisor' || u.rol === 'Ingeniero');
   const operadores   = USUARIOS_BD.filter(u => u.rol === 'Operador');
@@ -689,7 +669,6 @@ function renderAdminTabla() {
   setEl('cntOperadores', operadores.length);
 
   if (rolActivo === 'Gerente') {
-    // Gerente ve LAS 3 LISTAS
     if (secGer) secGer.hidden = false;
     if (secSup) secSup.hidden = false;
     if (secOpe) secOpe.hidden = false;
@@ -698,14 +677,12 @@ function renderAdminTabla() {
     renderSubTabla(bodySup, supervisores);
     renderSubTabla(bodyOpe, operadores);
   } else if (rolActivo === 'Supervisor' || rolActivo === 'Ingeniero') {
-    // Supervisor ve ÚNICAMENTE la lista de Operadores
     if (secGer) secGer.hidden = true;
     if (secSup) secSup.hidden = true;
     if (secOpe) secOpe.hidden = false;
 
     renderSubTabla(bodyOpe, operadores);
   } else {
-    // Operador NO ve ninguna lista
     if (secGer) secGer.hidden = true;
     if (secSup) secSup.hidden = true;
     if (secOpe) secOpe.hidden = true;
@@ -744,12 +721,9 @@ function renderSubTabla(tbody, lista) {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   8. EVENTOS & BINDINGS
-   ═══════════════════════════════════════════════════════════════════ */
+// Vinculación de Eventos DOM
 function bindEvents() {
 
-  // Submit Formulario Bootstrap Gerente Inicial
   document.getElementById('bootstrapGerenteForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const bootErr = document.getElementById('bootError');
@@ -790,7 +764,6 @@ function bindEvents() {
     }
   });
 
-  // Strength checkers
   const bootPwd = document.getElementById('bootPwd');
   bootPwd?.addEventListener('input', () => {
     const f = evaluarFuerza(bootPwd.value);
@@ -806,7 +779,6 @@ function bindEvents() {
     const i = document.getElementById('bootPwdConf'); i.type = i.type === 'password' ? 'text' : 'password';
   });
 
-  // Login Submit (Verificación manual de credenciales PBKDF2)
   document.getElementById('loginForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const usr = document.getElementById('inputUsuario').value.trim();
@@ -845,7 +817,6 @@ function bindEvents() {
 
   document.getElementById('btnLogout')?.addEventListener('click', cerrarSesion);
 
-  // SCADA Mandos
   document.getElementById('btnInicio')?.addEventListener('click', async () => {
     if (!puedeDo('inicio')) return;
     const { payload, firma } = await signCommand('INICIO');
@@ -904,7 +875,6 @@ function bindEvents() {
     a.click(); URL.revokeObjectURL(a.href); log('Log exportado a CSV', 'info');
   });
 
-  // Admin Modal Trigger
   const modal = document.getElementById('adminModal');
   const openModal = () => {
     if (!puedeDo('crearUsuario')) { snack('Sin permisos para crear usuarios'); return; }
@@ -922,7 +892,6 @@ function bindEvents() {
     if (e.target === modal) closeModal();
   });
 
-  // Admin Form Submit inside Modal (Crear Usuario según Rol activo)
   document.getElementById('adminCrearForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const errE = document.getElementById('admError'), okE = document.getElementById('admOk');
@@ -961,9 +930,7 @@ function bindEvents() {
   window.addEventListener('resize', resizeCanvas);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   9. INIT
-   ═══════════════════════════════════════════════════════════════════ */
+// Inicialización de la Aplicación
 async function init() {
   await initHmacKey();
   resizeCanvas();

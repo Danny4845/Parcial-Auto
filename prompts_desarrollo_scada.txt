@@ -1,0 +1,78 @@
+===============================================================================
+  PROMPTS ESTRUCTURADOS PARA ACELERAR EL DESARROLLO DEL SCADA CIBERFÍSICO
+  Proyecto: Estacionamiento Automatizado (III Parcial)
+  Autores: Daniel Colmenares y Hernaldo Pérez Roa
+===============================================================================
+
+A continuación se presentan los prompts de ingeniería estructurados que demuestran
+el uso avanzado de herramientas IA agenticas (Antigravity AI / Gemini 2.5 Flash)
+para la arquitectura, ciberseguridad, diseño UI/UX y lógica de proceso.
+
+-------------------------------------------------------------------------------
+PROMPT 1: ARQUITECTURA GENERAL Y CONSOLIDACIÓN SINGLE-PAGE (SPA)
+-------------------------------------------------------------------------------
+"Actúa como un arquitecto de software senior especializado en sistemas SCADA/HMI.
+Diseña un proyecto web unificado en un solo archivo index.html con un archivo CSS 
+y JS modular. La arquitectura debe cumplir con:
+1. Vista de Autenticación Unificada (Bootstrapping para Gerente Inicial y Login).
+2. Dashboard Principal con Canvas 2D cenital para el control de 100 plazas de 
+   estacionamiento, semáforo peatonal (SP) y fin de carrera (FCA/FCC).
+3. Modal de administración para la gestión de usuarios por rol.
+Asegura que el código sea limpio, semántico (HTML5) y modular."
+
+-------------------------------------------------------------------------------
+PROMPT 2: CIBERSEGURIDAD AVANZADA (PBKDF2 HASHING & HMAC-SHA256 SIGNATURES)
+-------------------------------------------------------------------------------
+"Implementa un módulo de seguridad criptográfico nativo en JavaScript utilizando 
+Web Crypto API (window.crypto.subtle) con los siguientes requisitos:
+1. Función derivePBKDF2: 100,000 iteraciones con SHA-256 y salt aleatorio de 
+   16 bytes por usuario. Persistencia segura en localStorage.
+2. Firma de Mandos de Control HMAC-SHA256: Genera una clave HMAC al iniciar. 
+   Cada orden (INICIO, RESET, SIM_E1, FORZAR_PORTON) debe crear un payload con 
+   accion, timestamp y nonce aleatorio, firmado dinámicamente.
+3. Función verifyCommand: Valida la firma HMAC antes de alterar cualquier 
+   variable del estado global EST para prevenir inyección en DevTools."
+
+-------------------------------------------------------------------------------
+PROMPT 3: JERARQUÍA RBAC Y VISUALIZACIÓN DE TABLAS SEPARADAS
+-------------------------------------------------------------------------------
+"Desarrolla el modelo de Control de Acceso Basado en Roles (RBAC) con una jerarquía 
+estricta de 3 niveles:
+1. Gerente (ERP/Máximo): Puede crear únicamente usuarios Supervisor u Operador. 
+   En la vista de administración ve 3 tablas separadas: Gerentes, Supervisores y 
+   Operadores, con opción de eliminación.
+2. Supervisor (Planta): Puede crear únicamente usuarios Operador. Ve solo la 
+   tabla de Operadores Registrados.
+3. Operador (Control): Acceso solo a mandos operativos (INICIO, RESET, SIM). 
+   El botón y el modal de gestión de usuarios quedan totalmente ocultos.
+4. Bootstrapping Inicial: Si no existe ningún Gerente en localStorage, la app 
+   debe forzar únicamente el registro del Gerente Inicial antes de permitir el login."
+
+-------------------------------------------------------------------------------
+PROMPT 4: MOTOR RENDERER CANVAS 2D Y SIMULACIÓN DE PROCESO CIBERFÍSICO
+-------------------------------------------------------------------------------
+"Crea un motor de dibujo cenital en Canvas 2D que renderice:
+1. Rejilla de 100 plazas ordenadas en 2 bloques (3x5 plazas por bloque) con bordes 
+   e indicadores de ocupación.
+2. Carriles de Entrada (E1, E2) y Salida (S1, S2) con sensores ópticos en bucle.
+3. Portón electromecánico de barras verticales animado con FCA y FCC.
+4. Semáforos reales S.P. (Peatonal), S.E. (Entrada con LED azul de plaza libre) y 
+   S.S. (Salida).
+5. Lógica del proceso: Ciclo SP (40s rojo / 20s verde) con ventana PA (Permiso de 
+   Acceso) activada a los +4s post SP->rojo y desactivada 6s antes del SP->verde."
+
+-------------------------------------------------------------------------------
+PROMPT 5: DISEÑO UI/UX INDUSTRIAL BICROMÁTICO Y LIMPIEZA VISUAL
+-------------------------------------------------------------------------------
+"Refactoriza la hoja de estilos CSS y la interfaz para lograr una estética 
+premium y profesional:
+1. Paleta de Colores: Fondo gris industrial visible (#14171f, #1d212b, #252a37) 
+   con acentos en Turquesa Claro (#4cd6c0).
+2. Semáforos Reales: Conserva los colores semánticos nativos de semáforo (Rojo 
+   #ff3344, Verde #00e676, Azul #3388ff y Amarillo #ffaa00).
+3. Limpieza de Texto: Elimina totalmente emojis y textos de ejemplo (placeholders). 
+   Los botones deben usar etiquetas claras como 'Crear Usuario' e 'Iniciar Sesión'.
+4. Componentes UI: Tarjetas SCADA con bordes definidos, badges por rol y log 
+   de auditoría exportable en CSV."
+
+===============================================================================

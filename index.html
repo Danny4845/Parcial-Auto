@@ -9,9 +9,7 @@
 </head>
 <body>
 
-  <!-- ═══════════════════════════════════════════════════════════════════
-       1. OVERLAY DE AUTENTICACIÓN / BOOTSTRAP GERENTE
-       ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Autenticación y Registro Inicial -->
   <div id="authOverlay" class="auth-overlay">
     <div class="auth-card">
       <div class="auth-logo">
@@ -20,7 +18,7 @@
         <div class="security-badge">PBKDF2 · SHA-256 · HMAC · RBAC Estricto</div>
       </div>
 
-      <!-- ══ VISTA A: BOOTSTRAP GERENTE (Aparece sólo si NO hay Gerente) ══ -->
+      <!-- Formulario Registro Gerente Inicial (Bootstrapping) -->
       <div id="panelBootstrapGerente" class="tab-panel" hidden>
         <div class="bootstrap-banner">
           <strong>Configuración Inicial Requerida:</strong><br>
@@ -62,7 +60,7 @@
         </form>
       </div>
 
-      <!-- ══ VISTA B: INICIO DE SESIÓN (Aparece cuando YA existe Gerente) ══ -->
+      <!-- Formulario Inicio de Sesión -->
       <div id="panelLogin" class="tab-panel">
         <form id="loginForm" class="auth-form" autocomplete="off">
           <div class="field-group">
@@ -92,12 +90,10 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════════
-       2. APLICACIÓN PRINCIPAL (DASHBOARD SCADA / HMI)
-       ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Dashboard Principal SCADA -->
   <div id="app" class="app" hidden>
 
-    <!-- HEADER SCADA -->
+    <!-- Header Principal -->
     <header class="app-header">
       <div class="header-left">
         <div class="logo-badge">SCADA</div>
@@ -131,13 +127,13 @@
       </div>
     </header>
 
-    <!-- MAIN DASHBOARD -->
+    <!-- Contenido Dashboard -->
     <main class="dashboard">
 
-      <!-- COLUMNA IZQUIERDA: Paneles de Control -->
+      <!-- Panel Lateral de Control -->
       <aside class="control-panel">
 
-        <!-- CARD 1: ESTADO PLAZAS -->
+        <!-- Estado Ocupación -->
         <div class="scada-card">
           <div class="card-header">
             <span>Capacidad del Garaje</span>
@@ -156,7 +152,7 @@
           </div>
         </div>
 
-        <!-- CARD 2: MANDOS OPERATIVOS -->
+        <!-- Botones Mandos Operativos -->
         <div class="scada-card">
           <div class="card-header">
             <span>Mandos de Control</span>
@@ -175,7 +171,7 @@
           </div>
         </div>
 
-        <!-- CARD 3: TEMPORIZADOR S.P. -->
+        <!-- Temporizador Semáforo Peatonal -->
         <div class="scada-card">
           <div class="card-header">
             <span>Semáforo Peatonal (SP)</span>
@@ -189,7 +185,7 @@
           </div>
         </div>
 
-        <!-- CARD 4: PANEL SUPERVISOR / INGENIERO -->
+        <!-- Ajuste de Parámetros Supervisor -->
         <div id="panelIngeniero" class="scada-card card-engineer" hidden>
           <div class="card-header">
             <span>Panel del Supervisor</span>
@@ -210,16 +206,16 @@
 
       </aside>
 
-      <!-- COLUMNA CENTRAL: Visualización Canvas SCADA -->
+      <!-- Visualización Canvas 2D SCADA -->
       <section class="canvas-panel">
         <div class="canvas-wrapper">
           <canvas id="scadaCanvas"></canvas>
         </div>
 
-        <!-- PANEL INFERIOR: Métricas / Log -->
+        <!-- Métricas y Log de Auditoría -->
         <div class="bottom-panels">
 
-          <!-- GERENTE METRICS -->
+          <!-- Métricas Gerenciales -->
           <div id="panelGerente" class="scada-card card-metrics" hidden>
             <div class="card-header">
               <span>Métricas Gerenciales (ERP)</span>
@@ -244,7 +240,7 @@
             </div>
           </div>
 
-          <!-- AUDIT LOG -->
+          <!-- Log de Auditoría -->
           <div id="panelLog" class="scada-card card-log" hidden>
             <div class="card-header">
               <span>Log de Auditoría & Ciberseguridad</span>
@@ -259,9 +255,7 @@
     </main>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════════
-       3. MODAL DE CREACIÓN Y VISUALIZACIÓN DE USUARIOS POR ROL
-       ═══════════════════════════════════════════════════════════════════ -->
+  <!-- Modal de Gestión y Creación de Usuarios por Rol -->
   <div id="adminModal" class="modal-overlay" hidden>
     <div class="modal-card">
       <div class="modal-header">
@@ -274,7 +268,7 @@
 
       <div class="modal-body">
 
-        <!-- FORMULARIO CREAR USUARIO (IZQ) -->
+        <!-- Formulario Crear Usuario -->
         <div class="modal-col-left">
           <h3 class="form-title">Crear Nuevo Usuario</h3>
           <form id="adminCrearForm" class="auth-form" autocomplete="off">
@@ -289,7 +283,7 @@
               <label for="admRol">Rol a Asignar</label>
               <div class="input-wrapper">
                 <select id="admRol">
-                  <!-- Se llena dinámicamente según el rol activo -->
+                  <!-- Llenado dinámico por rol activo -->
                 </select>
               </div>
               <span class="field-hint dim" id="admRolHint"></span>
@@ -323,11 +317,11 @@
           </form>
         </div>
 
-        <!-- LISTAS DE USUARIOS SEGÚN ROL (DER) -->
+        <!-- Listas de Usuarios por Rol -->
         <div class="modal-col-right">
           <div class="users-tables-container" id="usersTablesContainer">
 
-            <!-- LISTA 1: GERENTES (Sólo visible para Gerente) -->
+            <!-- Lista 1: Gerentes -->
             <div class="user-list-section" id="secGerentes" hidden>
               <div class="list-section-header">
                 <span class="list-section-title">Gerentes Registrados (<span id="cntGerentes">0</span>)</span>
@@ -349,7 +343,7 @@
               </div>
             </div>
 
-            <!-- LISTA 2: SUPERVISORES (Sólo visible para Gerente) -->
+            <!-- Lista 2: Supervisores -->
             <div class="user-list-section" id="secSupervisores" hidden>
               <div class="list-section-header">
                 <span class="list-section-title">Supervisores Registrados (<span id="cntSupervisores">0</span>)</span>
@@ -371,7 +365,7 @@
               </div>
             </div>
 
-            <!-- LISTA 3: OPERADORES (Visible para Gerente y Supervisor) -->
+            <!-- Lista 3: Operadores -->
             <div class="user-list-section" id="secOperadores" hidden>
               <div class="list-section-header">
                 <span class="list-section-title">Operadores Registrados (<span id="cntOperadores">0</span>)</span>
@@ -404,7 +398,6 @@
     </div>
   </div>
 
-  <!-- SNACKBAR DE NOTIFICACIONES -->
   <div id="snackbar" class="snackbar" hidden></div>
 
   <script src="app.js"></script>
