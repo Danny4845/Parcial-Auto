@@ -942,6 +942,24 @@ async function init() {
   cargarUsuariosLocales();
   poblarSelectorUsuarios();
   renderAdminTabla();
+
+  // Forzar que la pantalla inicial sea SIEMPRE el Inicio de Sesión
+  const authOverlay   = document.getElementById('authOverlay');
+  const mainApp       = document.getElementById('app');
+  const adminModal    = document.getElementById('adminModal');
+  const panelLogin    = document.getElementById('panelLogin');
+  const panelRegistro = document.getElementById('panelRegistro');
+  const tabLogin      = document.getElementById('tabLogin');
+  const tabRegistro   = document.getElementById('tabRegistro');
+
+  if (authOverlay)   authOverlay.hidden = false;
+  if (mainApp)       mainApp.hidden = true;
+  if (adminModal)    adminModal.hidden = true;
+  if (panelLogin)    panelLogin.hidden = false;
+  if (panelRegistro) panelRegistro.hidden = true;
+  if (tabLogin)      tabLogin.classList.add('active');
+  if (tabRegistro)   tabRegistro.classList.remove('active');
+
   resetSistema();
   renderLoop();
 }
