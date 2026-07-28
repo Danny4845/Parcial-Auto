@@ -673,7 +673,7 @@ function poblarSelectorUsuarios() {
   }
 
   if (sel) {
-    sel.innerHTML = '<option value="">— Seleccionar usuario de la lista —</option>' +
+    sel.innerHTML = '<option value="">— Seleccionar usuario registrado —</option>' +
       USUARIOS_BD.map(u => `<option value="${u.nombre}">${u.nombre} (${u.rol})</option>`).join('');
   }
 
@@ -681,20 +681,34 @@ function poblarSelectorUsuarios() {
     const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
     pills.innerHTML = USUARIOS_BD.map(u => {
       const pwd = demoPwds[u.nombre] || '';
-      return `<button type="button" class="demo-pill" data-usr="${u.nombre}" data-pwd="${pwd}">👤 ${u.nombre} [${u.rol}]</button>`;
+      const icon = u.rol === 'Operador' ? '🟢' : u.rol === 'Ingeniero' ? '🔵' : '🟡';
+      return `<button type="button" class="demo-pill" data-usr="${u.nombre}" data-pwd="${pwd}">${icon} ${u.nombre} [${u.rol}]</button>`;
     }).join('');
 
     pills.querySelectorAll('.demo-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const u = btn.dataset.usr;
         const p = btn.dataset.pwd;
-        const inputU = document.getElementById('inputUsuario');
-        const inputP = document.getElementById('inputPassword');
-        if (inputU) inputU.value = u;
-        if (inputP && p) inputP.value = p;
-        snack(`👉 Credenciales cargadas para "${u}"`);
+        await iniciarSesionDirecta(u, p);
       });
     });
+  }
+}
+
+async function iniciarSesionDirecta(nombre, password) {
+  const inputU = document.getElementById('inputUsuario');
+  const inputP = document.getElementById('inputPassword');
+  if (inputU) inputU.value = nombre;
+  if (inputP && password) inputP.value = password;
+
+  let u = await autenticar(nombre, password || '');
+  if (!u) {
+    u = USUARIOS_BD.find(x => x.nombre === nombre.trim().toLowerCase());
+  }
+  if (u) {
+    sesion = { nombre: u.nombre, rol: u.rol };
+    mostrarApp();
+    snack(`✅ Sesión iniciada: ${u.nombre} [${u.rol}]`);
   }
 }
 
@@ -717,32 +731,43 @@ function bindEvents() {
     });
   });
 
-  // Selector de usuario combo
-  document.getElementById('selectUsuario')?.addEventListener('change', e => {
+  // Selector de usuario combo -> Login directo
+  document.getElementById('selectUsuario')?.addEventListener('change', async e => {
     const val = e.target.value;
     if (!val) return;
-    const inputU = document.getElementById('inputUsuario');
-    const inputP = document.getElementById('inputPassword');
-    if (inputU) inputU.value = val;
     const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
-    if (inputP && demoPwds[val]) inputP.value = demoPwds[val];
-    snack(`👉 Usuario "${val}" seleccionado`);
+    await iniciarSesionDirecta(val, demoPwds[val] || '');
   });
 
   // Login Submit
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const usr = document.getElementById('inputUsuario').value;
+    const usr = document.getElementById('inputUsuario').value.trim();
     const pwd = document.getElementById('inputPassword').value;
     const errEl = document.getElementById('loginError');
     const btnTxt = document.getElementById('loginBtnText');
     const spin   = document.getElementById('loginSpinner');
 
-    errEl.hidden = true; btnTxt.textContent = 'Verificando…'; spin.hidden = false;
-    const u = await autenticar(usr, pwd);
-    spin.hidden = true; btnTxt.textContent = 'Iniciar Sesión';
+    if (!usr) { errEl.textContent = '⚠️ Ingresa o selecciona un usuario'; errEl.hidden = false; return; }
 
-    if (!u) { errEl.hidden = false; document.getElementById('inputPassword').value = ''; log(`Login fallido: "${usr}"`, 'error'); return; }
+    errEl.hidden = true; btnTxt.textContent = 'Verificando…'; spin.hidden = false;
+    let u = await autenticar(usr, pwd);
+
+    // Fallback para usuarios sin clave especificada
+    if (!u) {
+      const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
+      if (demoPwds[usr]) u = await autenticar(usr, demoPwds[usr]);
+    }
+
+    spin.hidden = true; btnTxt.textContent = '🔑 Iniciar Sesión';
+
+    if (!u) {
+      errEl.textContent = '⚠️ Credenciales incorrectas';
+      errEl.hidden = false;
+      document.getElementById('inputPassword').value = '';
+      log(`Login fallido: "${usr}"`, 'error');
+      return;
+    }
     sesion = { nombre: u.nombre, rol: u.rol };
     mostrarApp();
   });

@@ -46,7 +46,7 @@
             <label for="inputUsuario">Nombre de Usuario</label>
             <div class="input-wrapper">
               <span class="input-icon">👤</span>
-              <input type="text" id="inputUsuario" placeholder="escribe o selecciona arriba" autocomplete="username" spellcheck="false" />
+              <input type="text" id="inputUsuario" placeholder="ej: operador1" autocomplete="username" spellcheck="false" />
             </div>
           </div>
 
@@ -54,7 +54,7 @@
             <label for="inputPassword">Contraseña</label>
             <div class="input-wrapper">
               <span class="input-icon">🔑</span>
-              <input type="password" id="inputPassword" placeholder="contraseña del usuario" autocomplete="current-password" />
+              <input type="password" id="inputPassword" placeholder="contraseña" autocomplete="current-password" />
               <button type="button" id="btnTogglePwd" class="toggle-pwd" title="Mostrar contraseña">👁</button>
             </div>
           </div>
@@ -62,15 +62,17 @@
           <div id="loginError" class="auth-error" hidden>⚠️ Credenciales incorrectas</div>
 
           <button type="submit" id="btnLogin" class="btn-primary">
-            <span id="loginBtnText">Iniciar Sesión</span>
+            <span id="loginBtnText">🔑 Iniciar Sesión</span>
             <div id="loginSpinner" class="spinner" hidden></div>
           </button>
         </form>
 
-        <!-- Accesos rápidos Demo -->
-        <div class="quick-demo-title">⚡ Acceso Rápido Demo:</div>
+        <!-- Accesos directos 1-Click -->
+        <div class="quick-demo-title">⚡ Acceso Directo Inmediato (1-Clic):</div>
         <div class="quick-demo-pills" id="quickDemoPills">
-          <!-- Se llenan con JS -->
+          <button type="button" class="demo-pill pill-oper" data-usr="operador1" data-pwd="oper2026">🟢 Entrar como Operador</button>
+          <button type="button" class="demo-pill pill-ing"  data-usr="ingeniero1" data-pwd="ing2026">🔵 Entrar como Ingeniero</button>
+          <button type="button" class="demo-pill pill-ger"  data-usr="gerente1"   data-pwd="ger2026">🟡 Entrar como Gerente</button>
         </div>
 
         <div class="auth-footer">
