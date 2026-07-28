@@ -3,16 +3,46 @@ Proyecto: Estacionamiento Automatizado (III Parcial)
 Autores: Daniel Colmenares y Hernaldo Pérez Roa
 
 Prompt 1: Estructura base del proyecto
-"Necesito crear una aplicación web SCADA en una sola página utilizando HTML, CSS y JavaScript para controlar un estacionamiento automatizado de 100 plazas. Debe incluir un panel de inicio de sesión inicial y un dashboard principal que muestre el mapa interactivo del proceso mediante un Canvas 2D, integrando los controles operativos y métricas del sistema."
+"Hola, necesito crear un proyecto web en una sola pagina para un parcial de automatizacion. Tiene que controlar un estacionamiento de 100 puestos con semaforos y un porton automatizado. Haz la estructura en HTML con JS y CSS."
 
-Prompt 2: Ciberseguridad y protección de comandos
-"Implementa seguridad criptográfica nativa en JavaScript sin librerías externas. Las contraseñas deben guardarse aplicando el algoritmo hash PBKDF2 con salt aleatorio en localStorage. Además, los botones de control del SCADA (Inicio, Reset, Simulación) deben firmar cada comando con HMAC-SHA256 usando un nonce y timestamp para evitar que un usuario manipule el sistema desde la consola del navegador."
+Prompt 2: Dibujo inicial del mapa en Canvas 2D
+"En el JS dibuja con Canvas 2D el mapa del estacionamiento. Pon las 100 plazas en bloques, el porton en el medio y los semaforos de entrada, salida y peatonal. Que los carriles tengan nombres E1, E2, S1 y S2."
 
-Prompt 3: Gestión de usuarios y jerarquía de roles
-"Organiza el sistema mediante un control de acceso por roles (RBAC) con 3 niveles: Gerente, Supervisor y Operador. Si la aplicación inicia sin usuarios guardados, debe mostrar una pantalla inicial para registrar al Gerente de Planta. El Gerente puede ver 3 listas separadas (Gerentes, Supervisores y Operadores) y crear nuevos usuarios. El Supervisor sólo puede crear y visualizar a los Operadores. El usuario Operador sólo puede usar los mandos de control y no tiene acceso a crear ni ver listas de usuarios."
+Prompt 3: Autenticación inicial y registro
+"Agrega una pantalla de inicio de sesion antes del mapa. Ah no espera, tambien necesitamos registro de usuarios para que el profe pruebe crear cuentas... bueno, pon un login con pestañas para iniciar sesion y registrar usuarios."
 
-Prompt 4: Renderizado en Canvas 2D y simulación
-"Dibuja en un Canvas 2D el mapa cenital del estacionamiento automatizado. Debe mostrar la distribución de las 100 plazas en bloques, el portón electromecánico animado con los sensores de fin de carrera FCA y FCC, los carriles de entrada E1/E2 y salida S1/S2 con vehículos en movimiento, y los semáforos del proceso (Peatonal, Entrada con indicador azul de plazas disponibles y Salida)."
+Prompt 4: Ciberseguridad en contraseñas (PBKDF2)
+"El profesor nos pide que las contraseñas no se guarden en texto plano. Usa PBKDF2 con SHA256 y un salt aleatorio en Javascript nativo para guardar los hashes en localStorage."
 
-Prompt 5: Estilo visual e interfaz de usuario
-"Aplica un diseño de interfaz limpio y profesional utilizando una paleta de fondo gris oscuro industrial con detalles en turquesa claro. Conserva los colores reales de los semáforos (rojo, verde, azul y amarillo) para identificarlos claramente, remueve todos los emojis del sistema y mantén los cuadros de texto limpios sin ejemplos de relleno."
+Prompt 5: Protección de comandos de control (HMAC)
+"Protege los botones de control (Inicio, Reset, Simular Vehiculo) para que nadie pueda manipularlos cambiando variables desde la consola de F12. Firmalos con HMAC-SHA256 y verifica la firma antes de ejecutar el comando."
+
+Prompt 6: Corrección del flujo de registro inicial
+"Oye me di cuenta que la pantalla de registro abierta no tiene sentido en un sistema industrial real. Borra la pestaña de registrar del login. Si la app abre sin usuarios, haz que pida crear al Gerente de Planta primero."
+
+Prompt 7: Jerarquía de roles (RBAC)
+"Organiza 3 niveles de usuarios: Gerente, Supervisor y Operador. El Gerente crea Supervisores y Operadores. El Supervisor solo crea Operadores. El Operador solo usa el tablero y no crea a nadie."
+
+Prompt 8: Separación de listas de usuarios por rol
+"En la parte de gestionar usuarios me equivoque, el Gerente no debe ver todos los usuarios en una sola tabla mezclada. Separalo en 3 listas independientes: una para Gerentes, otra para Supervisores y otra para Operadores."
+
+Prompt 9: Restricción de visualización para el Supervisor
+"Haz que cuando inicie sesion un Supervisor, el modal solo le muestre la lista de Operadores. No debe ver los usuarios Gerente ni los Supervisores registrados."
+
+Prompt 10: Animación de vehículos y sensores
+"Haz que al presionar Simular Entrada E1 o Salida S1 aparezca un carrito moviendose por el carril, toque los sensores E1/S1, abra el porton durante la ventana PA y descuente las plazas ocupadas."
+
+Prompt 11: Cambio de colores de fondo e interfaz
+"Quita ese fondo negro tan oscuro que no se ve nada bien. Cambialo por un gris industrial oscuro pero visible y usa turquesa claro para los botones y bordes destacados."
+
+Prompt 12: Recuperar colores reales de semáforo
+"En la refactorizacion de colores los semaforos quedaron turquesas y se ve raro. Devuelve los colores reales a los semaforos: Rojo, Verde, Azul para entrada y Amarillo para advertencias."
+
+Prompt 13: Limpieza de emojis y textos de ejemplo
+"Borra todos los emojis que pusiste en los botones e iconos porque parece una app de juego. Tambien quita los textos de ejemplo de las cajas de texto (placeholders)."
+
+Prompt 14: Corrección de terminología en botones
+"En el boton de crear usuario dentro del modal pusiste 'Generar Hash PBKDF2', eso suena muy raro para un evaluador. Cambialo simplemente por 'Crear Usuario'."
+
+Prompt 15: Registro de auditoría y exportación CSV
+"Agrega un boton en el panel de log para exportar todo el registro de eventos y auditoria en un archivo CSV descargable."
