@@ -1,78 +1,41 @@
-===============================================================================
-  PROMPTS ESTRUCTURADOS PARA ACELERAR EL DESARROLLO DEL SCADA CIBERFÍSICO
-  Proyecto: Estacionamiento Automatizado (III Parcial)
-  Autores: Daniel Colmenares y Hernaldo Pérez Roa
-===============================================================================
-
-A continuación se presentan los prompts de ingeniería estructurados que demuestran
-el uso avanzado de herramientas IA agenticas (Antigravity AI / Gemini 2.5 Flash)
-para la arquitectura, ciberseguridad, diseño UI/UX y lógica de proceso.
+PROMPTS UTILIZADOS PARA EL DESARROLLO DEL PROYECTO SCADA
+Proyecto: Estacionamiento Automatizado (III Parcial)
+Autores: Daniel Colmenares y Hernaldo Pérez Roa
 
 -------------------------------------------------------------------------------
-PROMPT 1: ARQUITECTURA GENERAL Y CONSOLIDACIÓN SINGLE-PAGE (SPA)
+PROMPT 1: ESTRUCTURA Y BASE DE LA PÁGINA
 -------------------------------------------------------------------------------
-"Actúa como un arquitecto de software senior especializado en sistemas SCADA/HMI.
-Diseña un proyecto web unificado en un solo archivo index.html con un archivo CSS 
-y JS modular. La arquitectura debe cumplir con:
-1. Vista de Autenticación Unificada (Bootstrapping para Gerente Inicial y Login).
-2. Dashboard Principal con Canvas 2D cenital para el control de 100 plazas de 
-   estacionamiento, semáforo peatonal (SP) y fin de carrera (FCA/FCC).
-3. Modal de administración para la gestión de usuarios por rol.
-Asegura que el código sea limpio, semántico (HTML5) y modular."
+"Crea una aplicación web SCADA en una sola página (HTML, CSS y JS) para controlar 
+un estacionamiento automatizado de 100 plazas. Debe tener una pantalla de inicio 
+de sesión y un dashboard principal con un dibujo interactivo en Canvas."
 
 -------------------------------------------------------------------------------
-PROMPT 2: CIBERSEGURIDAD AVANZADA (PBKDF2 HASHING & HMAC-SHA256 SIGNATURES)
+PROMPT 2: SEGURIDAD Y PROTECCIÓN DE COMANDOS
 -------------------------------------------------------------------------------
-"Implementa un módulo de seguridad criptográfico nativo en JavaScript utilizando 
-Web Crypto API (window.crypto.subtle) con los siguientes requisitos:
-1. Función derivePBKDF2: 100,000 iteraciones con SHA-256 y salt aleatorio de 
-   16 bytes por usuario. Persistencia segura en localStorage.
-2. Firma de Mandos de Control HMAC-SHA256: Genera una clave HMAC al iniciar. 
-   Cada orden (INICIO, RESET, SIM_E1, FORZAR_PORTON) debe crear un payload con 
-   accion, timestamp y nonce aleatorio, firmado dinámicamente.
-3. Función verifyCommand: Valida la firma HMAC antes de alterar cualquier 
-   variable del estado global EST para prevenir inyección en DevTools."
+"Agrega seguridad al inicio de sesión guardando las contraseñas con el hash PBKDF2 
+y asegura que los botones de control del SCADA (Inicio, Reset, Simulación) estén 
+firmados con HMAC para que nadie pueda manipularlos desde la consola de desarrollador."
 
 -------------------------------------------------------------------------------
-PROMPT 3: JERARQUÍA RBAC Y VISUALIZACIÓN DE TABLAS SEPARADAS
+PROMPT 3: JERARQUÍA DE USUARIOS Y ROLES (RBAC)
 -------------------------------------------------------------------------------
-"Desarrolla el modelo de Control de Acceso Basado en Roles (RBAC) con una jerarquía 
-estricta de 3 niveles:
-1. Gerente (ERP/Máximo): Puede crear únicamente usuarios Supervisor u Operador. 
-   En la vista de administración ve 3 tablas separadas: Gerentes, Supervisores y 
-   Operadores, con opción de eliminación.
-2. Supervisor (Planta): Puede crear únicamente usuarios Operador. Ve solo la 
-   tabla de Operadores Registrados.
-3. Operador (Control): Acceso solo a mandos operativos (INICIO, RESET, SIM). 
-   El botón y el modal de gestión de usuarios quedan totalmente ocultos.
-4. Bootstrapping Inicial: Si no existe ningún Gerente en localStorage, la app 
-   debe forzar únicamente el registro del Gerente Inicial antes de permitir el login."
+"Organiza el sistema con 3 roles: Gerente, Supervisor y Operador. 
+- Si al abrir la app no hay ningún Gerente guardado, pide crear el Gerente inicial.
+- El Gerente puede ver 3 listas de usuarios separadas (Gerentes, Supervisores, Operadores) 
+  y puede crear nuevos usuarios.
+- El Supervisor sólo puede crear y ver la lista de Operadores.
+- El Operador sólo controla el sistema y no puede ni crear usuarios ni ver listas."
 
 -------------------------------------------------------------------------------
-PROMPT 4: MOTOR RENDERER CANVAS 2D Y SIMULACIÓN DE PROCESO CIBERFÍSICO
+PROMPT 4: DIBUJO EN CANVAS Y SIMULACIÓN
 -------------------------------------------------------------------------------
-"Crea un motor de dibujo cenital en Canvas 2D que renderice:
-1. Rejilla de 100 plazas ordenadas en 2 bloques (3x5 plazas por bloque) con bordes 
-   e indicadores de ocupación.
-2. Carriles de Entrada (E1, E2) y Salida (S1, S2) con sensores ópticos en bucle.
-3. Portón electromecánico de barras verticales animado con FCA y FCC.
-4. Semáforos reales S.P. (Peatonal), S.E. (Entrada con LED azul de plaza libre) y 
-   S.S. (Salida).
-5. Lógica del proceso: Ciclo SP (40s rojo / 20s verde) con ventana PA (Permiso de 
-   Acceso) activada a los +4s post SP->rojo y desactivada 6s antes del SP->verde."
+"Dibuja en un Canvas 2D el mapa del estacionamiento con 100 puestos, un portón 
+de barras animado con sensores FCA/FCC, carriles con carros en movimiento y 
+3 semáforos (peatonal, entrada con indicador azul de plazas libres y salida)."
 
 -------------------------------------------------------------------------------
-PROMPT 5: DISEÑO UI/UX INDUSTRIAL BICROMÁTICO Y LIMPIEZA VISUAL
+PROMPT 5: DISEÑO VISUAL E INTERFAZ
 -------------------------------------------------------------------------------
-"Refactoriza la hoja de estilos CSS y la interfaz para lograr una estética 
-premium y profesional:
-1. Paleta de Colores: Fondo gris industrial visible (#14171f, #1d212b, #252a37) 
-   con acentos en Turquesa Claro (#4cd6c0).
-2. Semáforos Reales: Conserva los colores semánticos nativos de semáforo (Rojo 
-   #ff3344, Verde #00e676, Azul #3388ff y Amarillo #ffaa00).
-3. Limpieza de Texto: Elimina totalmente emojis y textos de ejemplo (placeholders). 
-   Los botones deben usar etiquetas claras como 'Crear Usuario' e 'Iniciar Sesión'.
-4. Componentes UI: Tarjetas SCADA con bordes definidos, badges por rol y log 
-   de auditoría exportable en CSV."
-
-===============================================================================
+"Aplica un diseño visual elegante con fondo gris oscuro industrial y detalles 
+en turquesa claro. Usa los colores reales de los semáforos (rojo, verde, azul y 
+amarillo), quita todos los emojis y deja los campos de texto limpios."
