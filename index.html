@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCADA — Control de Acceso de Estacionamiento | III Parcial</title>
+  <meta name="description" content="Sistema SCADA/HMI Ciberfísico para control de acceso a estacionamiento automatizado con PBKDF2, HMAC y RBAC." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       1. OVERLAY DE AUTENTICACIÓN (LOGIN / REGISTRO)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">🏗️</div>
+        <h1>SCADA Industrial</h1>
+        <p class="auth-subtitle">Control de Acceso — Estacionamiento 100 Plazas</p>
+        <div class="security-badge">🔒 PBKDF2 · SHA-256 · HMAC · RBAC</div>
+      </div>
+
+      <!-- TABS DE NAVEGACIÓN -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin"    data-tab="login">🔑 Iniciar Sesión</button>
+        <button class="auth-tab"        id="tabRegistro" data-tab="registro">➕ Registrar</button>
+      </div>
+
+      <!-- ══ TAB 1: LOGIN ══ -->
+      <div id="panelLogin" class="tab-panel">
+        <form id="loginForm" class="auth-form" autocomplete="off">
+          <div class="field-group">
+            <label for="inputUsuario">Usuario</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input type="text" id="inputUsuario" placeholder="ej: operador1" autocomplete="username" spellcheck="false" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="inputPassword">Contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔑</span>
+              <input type="password" id="inputPassword" placeholder="contraseña" autocomplete="current-password" />
+              <button type="button" id="btnTogglePwd" class="toggle-pwd" title="Mostrar contraseña">👁</button>
+            </div>
+          </div>
+
+          <div id="loginError" class="auth-error" hidden>⚠️ Credenciales incorrectas</div>
+
+          <button type="submit" id="btnLogin" class="btn-primary">
+            <span id="loginBtnText">Iniciar Sesión</span>
+            <div id="loginSpinner" class="spinner" hidden></div>
+          </button>
+        </form>
+
+        <div class="auth-sep">— o —</div>
+
+        <!-- Carga de usuarios externos -->
+        <div class="auth-file-section">
+          <div class="file-source-label" id="sourceLabel">
+            <span class="source-dot demo"></span>
+            Usando usuarios de demostración
+          </div>
+          <label class="btn-file-load" for="fileUsuarios">📂 Cargar usuarios.json</label>
+          <input type="file" id="fileUsuarios" accept=".json" style="display:none" />
+          <button id="btnDemoUsers" class="btn-restore-demo" hidden>↺ Demo</button>
+        </div>
+
+        <div class="auth-footer">
+          <button id="btnOpenAdminFromLogin" class="link-admin-btn">🛡️ Panel Admin</button>
+          <span id="loginUserHint" class="user-hint">operador1 · ingeniero1 · gerente1</span>
+        </div>
+      </div>
+
+      <!-- ══ TAB 2: REGISTRO ══ -->
+      <div id="panelRegistro" class="tab-panel" hidden>
+        <form id="registroForm" class="auth-form" autocomplete="off">
+          <div class="field-group">
+            <label for="regNombre">Nombre de usuario</label>
+            <div class="input-wrapper">
+              <span class="input-icon">👤</span>
+              <input type="text" id="regNombre" placeholder="ej: operador2" maxlength="30" spellcheck="false" autocomplete="off" />
+            </div>
+            <span class="field-hint" id="regHintNombre"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="regRol">Rol industrial</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏭</span>
+              <select id="regRol">
+                <option value="">— seleccionar rol —</option>
+                <option value="Operador">Operador (Nivel Control)</option>
+                <option value="Ingeniero">Ingeniero / Supervisor (Nivel Planta)</option>
+                <option value="Gerente">Gerente (Nivel ERP)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="regPwd">Contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔑</span>
+              <input type="password" id="regPwd" placeholder="mínimo 6 caracteres" autocomplete="new-password" />
+              <button type="button" class="toggle-pwd" id="btnRegEye1">👁</button>
+            </div>
+            <div class="pwd-strength-bar"><div id="regStrengthBar" class="pwd-strength-fill"></div></div>
+            <span class="field-hint dim" id="regStrengthLabel"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="regPwdConf">Confirmar contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✅</span>
+              <input type="password" id="regPwdConf" placeholder="repite la contraseña" autocomplete="new-password" />
+              <button type="button" class="toggle-pwd" id="btnRegEye2">👁</button>
+            </div>
+            <span class="field-hint" id="regHintConf"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="regCodigo">Código de activación <span class="admin-only-tag">admin</span></label>
+            <div class="input-wrapper">
+              <span class="input-icon">🛡️</span>
+              <input type="password" id="regCodigo" placeholder="código administrativo" autocomplete="off" />
+            </div>
+            <span class="field-hint dim">Código: admin2026 (ICS Security)</span>
+          </div>
+
+          <div id="regError" class="auth-error" hidden></div>
+          <div id="regOk"    class="auth-ok"    hidden></div>
+
+          <button type="submit" id="btnRegistrar" class="btn-primary btn-green">
+            <span id="regBtnTxt">🔐 Crear Cuenta con PBKDF2</span>
+            <div id="regSpinner" class="spinner" hidden></div>
+          </button>
+        </form>
+
+        <div class="reg-footer">
+          <span class="reg-note">🔒 Contraseña derivada con PBKDF2 (100k iter, SHA-256). Nunca en texto plano.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       2. APLICACIÓN PRINCIPAL (DASHBOARD SCADA / HMI)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div id="app" class="app" hidden>
+
+    <!-- HEADER SCADA -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-badge">🏭 SCADA</div>
+        <div>
+          <h1 class="system-title">Estacionamiento Automatizado</h1>
+          <p class="system-sub">III Parcial · Daniel Colmenares & Hernaldo Pérez Roa</p>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div id="systemStatus" class="system-status status-offline">
+          <span class="status-dot"></span>
+          <span id="statusText">DETENIDO</span>
+        </div>
+        <div class="pa-badge" id="paHeaderBadge">
+          <span class="pa-dot" id="paDot"></span>
+          <span id="paStateText">PA: INACTIVO</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="user-chip">
+          <div class="user-avatar" id="userAvatar">O</div>
+          <div class="user-info">
+            <span id="displayNombre" class="user-name">operador1</span>
+            <span id="displayRol" class="user-rol rol-badge rol-Operador">Operador</span>
+          </div>
+        </div>
+        <button id="btnOpenAdminNav" class="btn-admin-nav" title="Gestión de Usuarios">🛡️ Admin</button>
+        <button id="btnLogout" class="btn-logout" title="Cerrar Sesión">🚪</button>
+      </div>
+    </header>
+
+    <!-- MAIN DASHBOARD -->
+    <main class="dashboard">
+
+      <!-- COLUMNA IZQUIERDA: Paneles de Control -->
+      <aside class="control-panel">
+
+        <!-- CARD 1: ESTADO PLAZAS -->
+        <div class="scada-card">
+          <div class="card-header">
+            <span class="card-icon">🅿️</span>
+            <span>Capacidad del Garaje</span>
+            <span class="badge-total">100 Max</span>
+          </div>
+          <div class="plaza-counter-wrap">
+            <div id="plazasDisplay" class="plaza-counter">100</div>
+            <div class="plaza-label">Plazas Disponibles</div>
+          </div>
+          <div class="plaza-bar">
+            <div id="plazaBarFill" class="plaza-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="plaza-meta">
+            <span id="plazaPct">0% ocupado</span>
+            <span>Prioridad: SALIDA</span>
+          </div>
+        </div>
+
+        <!-- CARD 2: MANDOS OPERATIVOS -->
+        <div class="scada-card">
+          <div class="card-header">
+            <span class="card-icon">🎮</span>
+            <span>Mandos de Control</span>
+          </div>
+          <div class="control-grid">
+            <button id="btnInicio" class="btn-ctrl btn-start">
+              <span>▶ INICIO</span>
+              <small>Activar Ciclo SP</small>
+            </button>
+            <button id="btnReset" class="btn-ctrl btn-reset">
+              <span>↺ RESET (CI)</span>
+              <small>Condiciones Iniciales</small>
+            </button>
+          </div>
+          <div class="sim-grid">
+            <button id="btnSimE1" class="btn-ctrl btn-sim">🚗 Entrada (E1)</button>
+            <button id="btnSimS1" class="btn-ctrl btn-sim">🚗 Salida (S1)</button>
+          </div>
+        </div>
+
+        <!-- CARD 3: TEMPORIZADOR S.P. -->
+        <div class="scada-card">
+          <div class="card-header">
+            <span class="card-icon">⏱️</span>
+            <span>Semáforo Peatonal (SP)</span>
+          </div>
+          <div class="timer-display">
+            <div id="timerLabel" class="timer-label">Sistema detenido</div>
+            <div class="timer-bar">
+              <div id="timerBarFill" class="timer-bar-fill" style="width:0%"></div>
+            </div>
+            <div id="timerVal" class="timer-val">—</div>
+          </div>
+        </div>
+
+        <!-- CARD 4: PANEL INGENIERO (Solo Ingeniero) -->
+        <div id="panelIngeniero" class="scada-card card-engineer" hidden>
+          <div class="card-header">
+            <span class="card-icon">🔧</span>
+            <span>Panel del Ingeniero</span>
+          </div>
+          <div class="eng-controls">
+            <button id="btnForzarPorton" class="btn-ctrl btn-warn">🚧 Forzar Abrir/Cerrar Portón</button>
+            <div class="time-adjust">
+              <label>Tiempo Verde SP (s):</label>
+              <input type="number" id="inputTiempoVerde" value="20" min="5" max="120" />
+            </div>
+            <div class="time-adjust">
+              <label>Tiempo Rojo SP (s):</label>
+              <input type="number" id="inputTiempoRojo" value="40" min="10" max="300" />
+            </div>
+            <button id="btnAplicarTiempos" class="btn-ctrl btn-apply">⚙️ Aplicar Tiempos SP</button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- COLUMNA CENTRAL: Visualización Canvas SCADA -->
+      <section class="canvas-panel">
+        <div class="canvas-wrapper">
+          <canvas id="scadaCanvas"></canvas>
+        </div>
+
+        <!-- PANEL INFERIOR: Métricas / Log -->
+        <div class="bottom-panels">
+
+          <!-- GERENTE METRICS -->
+          <div id="panelGerente" class="scada-card card-metrics" hidden>
+            <div class="card-header">
+              <span class="card-icon">📊</span>
+              <span>Métricas Gerenciales (ERP)</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <span class="metric-val" id="metEntradas">0</span>
+                <span class="metric-lbl">Entradas Totales</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-val" id="metSalidas">0</span>
+                <span class="metric-lbl">Salidas Totales</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-val" id="metCiclos">0</span>
+                <span class="metric-lbl">Ciclos Portón</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-val" id="metEnergia">0 Wh</span>
+                <span class="metric-lbl">Consumo Est.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AUDIT LOG -->
+          <div id="panelLog" class="scada-card card-log" hidden>
+            <div class="card-header">
+              <span class="card-icon">📋</span>
+              <span>Log de Auditoría & Ciberseguridad</span>
+              <button id="btnExportLog" class="btn-export-log">📥 Exportar CSV</button>
+            </div>
+            <div id="auditLog" class="audit-log"></div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       3. MODAL DEL PANEL DE ADMINISTRACIÓN (ADMIN MODAL)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div id="adminModal" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🛡️ Panel de Administración de Usuarios</span>
+          <span class="sec-badge">PBKDF2 · SHA-256 · 100k iter</span>
+        </div>
+        <button id="btnCloseAdminModal" class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- CREAR USUARIO (IZQ) -->
+        <div class="modal-col-left">
+          <form id="adminCrearForm" class="auth-form" autocomplete="off">
+            <h3>➕ Crear Usuario</h3>
+
+            <div class="field-group">
+              <label for="admNombre">Nombre de usuario</label>
+              <div class="input-wrapper">
+                <span class="input-icon">👤</span>
+                <input type="text" id="admNombre" placeholder="ej: operador3" maxlength="30" autocomplete="off" />
+              </div>
+              <span class="field-hint" id="admHintNombre"></span>
+            </div>
+
+            <div class="field-group">
+              <label for="admRol">Rol asignado</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🏷️</span>
+                <select id="admRol">
+                  <option value="">— seleccionar —</option>
+                  <option value="Operador">Operador (Nivel Control)</option>
+                  <option value="Ingeniero">Ingeniero (Nivel Planta)</option>
+                  <option value="Gerente">Gerente (Nivel ERP)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="admPwd">Contraseña</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔑</span>
+                <input type="password" id="admPwd" placeholder="mínimo 6 caracteres" autocomplete="new-password" />
+                <button type="button" class="toggle-pwd" id="btnAdmEye1">👁</button>
+              </div>
+              <div class="pwd-strength-bar"><div id="admStrengthBar" class="pwd-strength-fill"></div></div>
+              <span class="field-hint dim" id="admStrengthLabel"></span>
+            </div>
+
+            <div class="field-group">
+              <label for="admPwdConf">Confirmar contraseña</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✅</span>
+                <input type="password" id="admPwdConf" placeholder="repite contraseña" autocomplete="new-password" />
+                <button type="button" class="toggle-pwd" id="btnAdmEye2">👁</button>
+              </div>
+            </div>
+
+            <div id="admError" class="auth-error" hidden></div>
+            <div id="admOk"    class="auth-ok"    hidden></div>
+
+            <button type="submit" id="btnAdmCrear" class="btn-primary">
+              <span id="admBtnTxt">🔐 Generar Hash PBKDF2</span>
+              <div id="admSpinner" class="spinner" hidden></div>
+            </button>
+          </form>
+        </div>
+
+        <!-- LISTA USUARIOS + EXPORTAR (DER) -->
+        <div class="modal-col-right">
+          <div class="users-toolbar">
+            <div class="users-count">
+              <span id="totalUsuarios">0</span> usuario(s) registrados
+            </div>
+            <div class="toolbar-actions">
+              <button id="btnExportarJson" class="btn-export-json">⬇️ Exportar usuarios.json</button>
+              <button id="btnImportarJson" class="btn-import-json">📂 Importar JSON</button>
+              <input type="file" id="fileImportJson" accept=".json" style="display:none" />
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Salt (base64)</th>
+                  <th>Hash PBKDF2</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersBody">
+                <tr id="adminEmptyRow">
+                  <td colspan="6" class="empty-msg">No hay usuarios registrados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="json-preview-box">
+            <div class="preview-header">
+              <span>📄 Vista previa <code>usuarios.json</code></span>
+              <button id="btnCopyJson" class="btn-copy">📋 Copiar</button>
+            </div>
+            <pre id="jsonPreview" class="json-preview">// Los usuarios aparecerán aquí</pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SNACKBAR DE NOTIFICACIONES -->
+  <div id="snackbar" class="snackbar" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

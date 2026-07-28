@@ -1,0 +1,142 @@
+================================================================================
+PLAN DE VERIFICACIÓN Y PRUEBAS DEL SISTEMA SCADA
+Control de Acceso de Estacionamiento Automatizado (100 Plazas)
+III Parcial de Automatización Industrial
+Autores: Daniel Colmenares & Hernaldo Pérez Roa
+================================================================================
+
+--------------------------------------------------------------------------------
+MÓDULO 1: AUTENTICACIÓN & REGISTRO (ACADEMIC-GRADE AUTH)
+--------------------------------------------------------------------------------
+
+[ ] Test 1.1: Inicio de Sesión con Usuarios Demo (RBAC)
+    - Abrir index.html en el navegador (Opera GX / Chrome / Edge).
+    - Probar login con usuario Operador: "operador1" / "oper2026".
+      * Resultado esperado: Ingresa al Dashboard. Los mandos Inicio, Reset,
+        Entrada E1 y Salida S1 están habilitados. Los paneles de Ingeniero
+        y Gerente permanecen ocultos.
+    - Hacer clic en el botón de cerrar sesión (puerta).
+    - Probar login con usuario Ingeniero: "ingeniero1" / "ing2026".
+      * Resultado esperado: Ingresa al Dashboard. Aparece el Panel del
+        Ingeniero (forzado de portón, ajuste de temporizadores) y el Log de
+        Auditoría.
+    - Cerrar sesión y probar con Gerente: "gerente1" / "ger2026".
+      * Resultado esperado: Ingresa al Dashboard. Aparece el Panel Gerencial
+        (Métricas ERP) y el Log de Auditoría.
+
+[ ] Test 1.2: Validación de Intentos Fallidos
+    - Ingresar un usuario o contraseña incorrectos (ej: "operador1" / "fail").
+    - Resultado esperado: Se muestra alerta roja "Credenciales incorrectas"
+      y el acceso es rechazado. En el log se registra el intento fallido.
+
+[ ] Test 1.3: Registro de Nuevos Usuarios (Sign-Up)
+    - En la pantalla de acceso, seleccionar la pestaña "Registrar".
+    - Rellenar:
+      * Usuario: operador2
+      * Rol: Operador
+      * Contraseña: MiPassword2026*
+      * Confirmar contraseña: MiPassword2026*
+      * Código de Activación: admin2026
+    - Observar cómo el medidor de fuerza indica "Muy fuerte".
+    - Hacer clic en "Crear Cuenta con PBKDF2".
+    - Resultado esperado: Muestra confirmación de cuenta creada, redirige a la
+      pestaña de Login con "operador2" pre-escrito e inicia sesión exitosamente.
+      La cuenta persiste en localStorage al recargar el navegador.
+
+--------------------------------------------------------------------------------
+MÓDULO 2: PANEL DE ADMINISTRACIÓN DE USUARIOS
+--------------------------------------------------------------------------------
+
+[ ] Test 2.1: Apertura del Modal Admin
+    - En la barra superior o en la pantalla de inicio, hacer clic en "Admin".
+    - Resultado esperado: Se despliega la ventana modal del Panel Admin.
+
+[ ] Test 2.2: Creación y Exportación de usuarios.json
+    - Crear un usuario dentro del modal (ej: "ingeniero2" / "Ingeniero" / "ing2026*").
+    - Verificar que aparece en la tabla con su Salt y Hash PBKDF2 en base64.
+    - Revisar el cuadro de vista previa de usuarios.json.
+    - Hacer clic en "Exportar usuarios.json".
+    - Resultado esperado: Se descarga el archivo usuarios.json listo para compartir.
+
+[ ] Test 2.3: Importación de usuarios.json
+    - En la pantalla de inicio de sesión, hacer clic en "Cargar usuarios.json" y
+      seleccionar el archivo descargado.
+    - Resultado esperado: El indicador muestra "N usuario(s) cargados" y se
+      puede iniciar sesión con los usuarios exportados.
+
+--------------------------------------------------------------------------------
+MÓDULO 3: PROCESO INDUSTRIAL & ANIMACIÓN CANVAS 2D
+--------------------------------------------------------------------------------
+
+[ ] Test 3.1: Arrancar el Proceso Industrial
+    - Iniciar sesión como "operador1" o "ingeniero1".
+    - Hacer clic en "INICIO".
+    - Resultado esperado:
+      * Estado cambia a ACTIVO.
+      * El semáforo peatonal S.P. en el Canvas comienza su ciclo (20s Verde / 40s Rojo).
+      * La barra del temporizador se llena y vacía.
+      * El semáforo S.E. enciende la luz AZUL (indica plazas libres).
+
+[ ] Test 3.2: Verificación de la Ventana PA (Permiso de Acceso)
+    - Observar el indicador PA (INACTIVO / ACTIVO).
+    - Resultado esperado:
+      * Cuando S.P. pasa a ROJO, transcurren 4 segundos de margen y cambia a PA: ACTIVO.
+      * 6 segundos antes de que S.P. vuelva a VERDE, cambia a PA: INACTIVO y el
+        portón se cierra automáticamente si estaba abierto.
+
+[ ] Test 3.3: Simulación de Vehículo de Entrada (E1 -> E2)
+    - Con el sistema ACTIVO y PA: ACTIVO, hacer clic en "Entrada (E1)".
+    - Resultado esperado:
+      * Vehículo azul se aproxima por la avenida derecha.
+      * Activa el sensor E1.
+      * Portón comienza a abrirse (FCA se activa).
+      * Semáforo S.E. pasa a VERDE.
+      * Vehículo entra, activa E2, la plaza disponible disminuye (ej: 99 libres),
+        se incrementa la entrada total y el portón se cierra (FCC).
+
+[ ] Test 3.4: Simulación de Vehículo de Salida (S1 -> S2)
+    - Hacer clic en "Salida (S1)".
+    - Resultado esperado:
+      * Vehículo generado en el garaje activa S1.
+      * Portón se abre (FCA) en ventana PA.
+      * Semáforo S.S. pasa a VERDE.
+      * Vehículo sale, activa S2, se libera plaza (+1 libre) y el portón cierra (FCC).
+
+[ ] Test 3.5: Prioridad de Salida
+    - Hacer clic en "Entrada (E1)" y rápidamente en "Salida (S1)".
+    - Resultado esperado: El sistema atiende primero el vehículo de SALIDA (S1) por
+      ser la vía prioritaria, y luego atiende la entrada (E1).
+
+--------------------------------------------------------------------------------
+MÓDULO 4: FUNCIONES DE INGENIERO, GERENTE Y AUDITORÍA
+--------------------------------------------------------------------------------
+
+[ ] Test 4.1: Forzado de Portón (Ingeniero)
+    - Iniciar sesión como "ingeniero1".
+    - Hacer clic en "Forzar Abrir/Cerrar Portón".
+    - Resultado esperado: El portón opera manualmente ignorando temporizadores.
+      Se registra como advertencia en el log.
+
+[ ] Test 4.2: Ajuste de Tiempos SP (Ingeniero)
+    - Cambiar Verde a 10s y Rojo a 20s, hacer clic en "Aplicar Tiempos SP".
+    - Resultado esperado: El ritmo del semáforo S.P. se actualiza inmediatamente.
+
+[ ] Test 4.3: Métricas de ERP (Gerente)
+    - Iniciar sesión como "gerente1".
+    - Resultado esperado: Visualización de métricas (entradas, salidas, ciclos del
+      motor y consumo estimado en Watt-horas).
+
+[ ] Test 4.4: Exportación de Log a CSV
+    - Hacer clic en "Exportar CSV" en la cabecera del log.
+    - Resultado esperado: Se descarga scada_log.csv con todos los eventos.
+
+--------------------------------------------------------------------------------
+MÓDULO 5: CIBERSEGURIDAD ANTI-TAMPERING (HMAC-SHA256)
+--------------------------------------------------------------------------------
+
+[ ] Test 5.1: Protección de Comandos mediante Consola DevTools
+    - Abrir las DevTools (F12) -> Consola.
+    - Escribir: EST.sistemaActivo = true;
+    - Resultado esperado: Las variables internas no pueden disparar actuadores
+      sin la firma criptográfica HMAC generada por la función signCommand('ACCION').
+      Firma inválida produce "Firma HMAC inválida".
