@@ -1,41 +1,18 @@
-PROMPTS UTILIZADOS PARA EL DESARROLLO DEL PROYECTO SCADA
+Prompts de Desarrollo SCADA
 Proyecto: Estacionamiento Automatizado (III Parcial)
 Autores: Daniel Colmenares y Hernaldo Pérez Roa
 
--------------------------------------------------------------------------------
-PROMPT 1: ESTRUCTURA Y BASE DE LA PÁGINA
--------------------------------------------------------------------------------
-"Crea una aplicación web SCADA en una sola página (HTML, CSS y JS) para controlar 
-un estacionamiento automatizado de 100 plazas. Debe tener una pantalla de inicio 
-de sesión y un dashboard principal con un dibujo interactivo en Canvas."
+Prompt 1: Estructura base del proyecto
+"Necesito crear una aplicación web SCADA en una sola página utilizando HTML, CSS y JavaScript para controlar un estacionamiento automatizado de 100 plazas. Debe incluir un panel de inicio de sesión inicial y un dashboard principal que muestre el mapa interactivo del proceso mediante un Canvas 2D, integrando los controles operativos y métricas del sistema."
 
--------------------------------------------------------------------------------
-PROMPT 2: SEGURIDAD Y PROTECCIÓN DE COMANDOS
--------------------------------------------------------------------------------
-"Agrega seguridad al inicio de sesión guardando las contraseñas con el hash PBKDF2 
-y asegura que los botones de control del SCADA (Inicio, Reset, Simulación) estén 
-firmados con HMAC para que nadie pueda manipularlos desde la consola de desarrollador."
+Prompt 2: Ciberseguridad y protección de comandos
+"Implementa seguridad criptográfica nativa en JavaScript sin librerías externas. Las contraseñas deben guardarse aplicando el algoritmo hash PBKDF2 con salt aleatorio en localStorage. Además, los botones de control del SCADA (Inicio, Reset, Simulación) deben firmar cada comando con HMAC-SHA256 usando un nonce y timestamp para evitar que un usuario manipule el sistema desde la consola del navegador."
 
--------------------------------------------------------------------------------
-PROMPT 3: JERARQUÍA DE USUARIOS Y ROLES (RBAC)
--------------------------------------------------------------------------------
-"Organiza el sistema con 3 roles: Gerente, Supervisor y Operador. 
-- Si al abrir la app no hay ningún Gerente guardado, pide crear el Gerente inicial.
-- El Gerente puede ver 3 listas de usuarios separadas (Gerentes, Supervisores, Operadores) 
-  y puede crear nuevos usuarios.
-- El Supervisor sólo puede crear y ver la lista de Operadores.
-- El Operador sólo controla el sistema y no puede ni crear usuarios ni ver listas."
+Prompt 3: Gestión de usuarios y jerarquía de roles
+"Organiza el sistema mediante un control de acceso por roles (RBAC) con 3 niveles: Gerente, Supervisor y Operador. Si la aplicación inicia sin usuarios guardados, debe mostrar una pantalla inicial para registrar al Gerente de Planta. El Gerente puede ver 3 listas separadas (Gerentes, Supervisores y Operadores) y crear nuevos usuarios. El Supervisor sólo puede crear y visualizar a los Operadores. El usuario Operador sólo puede usar los mandos de control y no tiene acceso a crear ni ver listas de usuarios."
 
--------------------------------------------------------------------------------
-PROMPT 4: DIBUJO EN CANVAS Y SIMULACIÓN
--------------------------------------------------------------------------------
-"Dibuja en un Canvas 2D el mapa del estacionamiento con 100 puestos, un portón 
-de barras animado con sensores FCA/FCC, carriles con carros en movimiento y 
-3 semáforos (peatonal, entrada con indicador azul de plazas libres y salida)."
+Prompt 4: Renderizado en Canvas 2D y simulación
+"Dibuja en un Canvas 2D el mapa cenital del estacionamiento automatizado. Debe mostrar la distribución de las 100 plazas en bloques, el portón electromecánico animado con los sensores de fin de carrera FCA y FCC, los carriles de entrada E1/E2 y salida S1/S2 con vehículos en movimiento, y los semáforos del proceso (Peatonal, Entrada con indicador azul de plazas disponibles y Salida)."
 
--------------------------------------------------------------------------------
-PROMPT 5: DISEÑO VISUAL E INTERFAZ
--------------------------------------------------------------------------------
-"Aplica un diseño visual elegante con fondo gris oscuro industrial y detalles 
-en turquesa claro. Usa los colores reales de los semáforos (rojo, verde, azul y 
-amarillo), quita todos los emojis y deja los campos de texto limpios."
+Prompt 5: Estilo visual e interfaz de usuario
+"Aplica un diseño de interfaz limpio y profesional utilizando una paleta de fondo gris oscuro industrial con detalles en turquesa claro. Conserva los colores reales de los semáforos (rojo, verde, azul y amarillo) para identificarlos claramente, remueve todos los emojis del sistema y mantén los cuadros de texto limpios sin ejemplos de relleno."
