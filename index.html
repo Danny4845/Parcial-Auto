@@ -336,7 +336,7 @@
           <span>🛡️ Panel de Administración de Usuarios</span>
           <span class="sec-badge">PBKDF2 · SHA-256 · 100k iter</span>
         </div>
-        <button id="btnCloseAdminModal" class="btn-close-modal">✕</button>
+        <button id="btnCloseAdminModal" class="btn-close-modal">✕ Cerrar</button>
       </div>
 
       <div class="modal-body">
@@ -344,7 +344,7 @@
         <!-- CREAR USUARIO (IZQ) -->
         <div class="modal-col-left">
           <form id="adminCrearForm" class="auth-form" autocomplete="off">
-            <h3>➕ Crear Usuario</h3>
+            <h3>➕ Crear Nuevo Usuario</h3>
 
             <div class="field-group">
               <label for="admNombre">Nombre de usuario</label>
@@ -402,7 +402,7 @@
         <div class="modal-col-right">
           <div class="users-toolbar">
             <div class="users-count">
-              <span id="totalUsuarios">0</span> usuario(s) registrados
+              <span id="totalUsuarios">0</span> usuario(s) en base de datos
             </div>
             <div class="toolbar-actions">
               <span class="sec-badge" style="background:rgba(0,230,118,0.1); border-color:rgba(0,230,118,0.3); color:var(--green)">
@@ -432,6 +432,10 @@
           </div>
         </div>
 
+      </div>
+
+      <div class="modal-footer-bar">
+        <button id="btnReturnToLogin" class="btn-return-login">⬅️ Volver a Iniciar Sesión</button>
       </div>
     </div>
   </div>

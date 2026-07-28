@@ -370,6 +370,17 @@ canvas { display: block; max-width: 100%; max-height: 100%; }
 .btn-copy { padding: 2px 6px; border-radius: 4px; background: none; border: 1px solid var(--border-bright); color: var(--text-secondary); font-size: .66rem; cursor: pointer; }
 .json-preview { padding: 8px 12px; font-family: var(--font-mono); font-size: .68rem; color: var(--text-secondary); overflow-y: auto; margin: 0; }
 
+.modal-footer-bar {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding: 12px 20px; background: #0a0d16; border-top: 1px solid var(--border-bright);
+}
+.btn-return-login {
+  padding: 8px 18px; border-radius: var(--radius-sm);
+  background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.4);
+  color: var(--cyan); font-size: .82rem; font-weight: 800; cursor: pointer; transition: all .2s;
+}
+.btn-return-login:hover { background: rgba(0,229,255,0.25); transform: translateY(-1px); }
+
 /* Snackbar */
 .snackbar {
   position: fixed; bottom: 20px; right: 20px; z-index: 3000;

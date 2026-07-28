@@ -871,6 +871,11 @@ function bindEvents() {
   document.getElementById('btnOpenAdminNav')?.addEventListener('click', openModal);
   document.getElementById('btnOpenAdminFromLogin')?.addEventListener('click', openModal);
   document.getElementById('btnCloseAdminModal')?.addEventListener('click', closeModal);
+  document.getElementById('btnReturnToLogin')?.addEventListener('click', closeModal);
+
+  modal?.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
 
   // Admin Form Submit inside Modal
   document.getElementById('adminCrearForm')?.addEventListener('submit', async e => {
@@ -911,6 +916,7 @@ async function init() {
   bindEvents();
   cargarUsuariosLocales();
   poblarSelectorUsuarios();
+  renderAdminTabla();
   resetSistema();
   renderLoop();
 }
