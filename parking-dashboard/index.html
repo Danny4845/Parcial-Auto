@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Estacionamiento Inteligente</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Sistema de Estacionamiento Automatizado</h1>
+        <div class="estado">
+            <span class="estado-sistema">
+                🟢 Sistema Activo
+            </span>
+            <span id="reloj">
+                00:00:00
+            </span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Zona de simulación -->
+        <section class="simulacion">
+            <!-- Entrada -->
+            <div class="entrada">
+                <h2>Entrada</h2>
+                <div class="carretera"></div>
+                <div class="barrera">
+                    Barrera
+                </div>
+            </div>
+
+            <!-- Estacionamiento -->
+            <div class="estacionamiento">
+                <h2>Estacionamiento</h2>
+                <div class="contador-estacionamiento">
+                    <h3>Ocupación</h3>
+                    <p>
+                        <span id="espaciosOcupados">
+                            0
+                        </span>
+                        /
+                        <span id="capacidadMaxima">
+                            100
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Salida -->
+            <div class="salida">
+                <h2>Salida</h2>
+                <div class="barrera">
+                    Barrera
+                </div>
+                <div class="carretera"></div>
+            </div>
+        </section>
+
+        <!-- Panel de indicadores -->
+        <section class="panel">
+            <div class="tarjeta">
+                <h3>Espacios Disponibles</h3>
+                <p id="espaciosDisponibles">
+                    100
+                </p>
+            </div>
+            <div class="tarjeta">
+                <h3>Vehículos Hoy</h3>
+                <p id="vehiculosHoy">
+                    0
+                </p>
+            </div>
+            <div class="tarjeta">
+                <h3>Estado Barrera Entrada</h3>
+                <p id="estadoEntrada">
+                    Cerrada
+                </p>
+            </div>
+            <div class="tarjeta">
+                <h3>Estado Barrera Salida</h3>
+                <p id="estadoSalida">
+                    Cerrada
+                </p>
+            </div>
+        </section>
+
+        <!-- Controles -->
+        <section class="controles">
+            <button id="botonInicio">
+                Start
+            </button>
+            <button id="botonDetener">
+                Stop
+            </button>
+            <button id="botonEmergencia">
+                Emergencia
+            </button>
+            <button id="botonSimularEntrada">
+                Simular Entrada
+            </button>
+            <button id="botonSimularSalida">
+                Simular Salida
+            </button>
+        </section>
+
+        <section class="historial">
+            <h2>Registro de Eventos</h2>
+            <ul id="listaHistorial">
+                <li>Sistema iniciado...</li>
+            </ul>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
