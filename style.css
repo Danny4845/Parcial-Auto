@@ -151,29 +151,14 @@ html, body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.auth-sep { text-align: center; font-size: .73rem; color: var(--text-dim); margin: 14px 0 10px; position: relative; }
-.auth-sep::before, .auth-sep::after { content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: var(--border-dim); }
-.auth-sep::before { left: 0; } .auth-sep::after { right: 0; }
-
-.auth-file-section { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.file-source-label {
-  display: flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--text-secondary);
-  background: rgba(255,255,255,0.04); border: 1px solid var(--border-dim); padding: 4px 10px; border-radius: 20px;
+.quick-demo-title { font-size: .72rem; color: var(--text-dim); margin-top: 14px; margin-bottom: 6px; font-weight: 700; }
+.quick-demo-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.demo-pill {
+  padding: 4px 10px; border-radius: 14px; font-size: .72rem; font-weight: 700;
+  cursor: pointer; border: 1px solid var(--border-bright); background: rgba(255,255,255,0.03);
+  color: var(--text-secondary); transition: all .2s; font-family: var(--font-mono);
 }
-.source-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.source-dot.demo { background: var(--text-dim); }
-.source-dot.loaded { background: var(--green); box-shadow: 0 0 6px var(--green); }
-
-.btn-file-load {
-  padding: 5px 12px; border-radius: var(--radius-sm);
-  background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.3);
-  color: #ff8c00; font-size: .75rem; font-weight: 600; cursor: pointer; transition: all .2s;
-}
-.btn-file-load:hover { background: rgba(255,140,0,0.2); }
-.btn-restore-demo {
-  padding: 4px 10px; border-radius: var(--radius-sm); background: none;
-  border: 1px solid var(--border-bright); color: var(--text-dim); font-size: .72rem; cursor: pointer;
-}
+.demo-pill:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,0.1); }
 
 .auth-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
 .link-admin-btn {

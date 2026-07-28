@@ -660,13 +660,46 @@ function renderAdminTabla() {
   }
 
   setEl('totalUsuarios', USUARIOS_BD.length);
+  poblarSelectorUsuarios();
 }
 
-function actualizarSourceLabel() {
-  const hint = document.getElementById('loginUserHint');
+function poblarSelectorUsuarios() {
+  const sel   = document.getElementById('selectUsuario');
+  const pills = document.getElementById('quickDemoPills');
+  const hint  = document.getElementById('loginUserHint');
+
   if (hint) {
     hint.textContent = USUARIOS_BD.map(u => u.nombre).slice(0, 5).join(' · ');
   }
+
+  if (sel) {
+    sel.innerHTML = '<option value="">— Seleccionar usuario de la lista —</option>' +
+      USUARIOS_BD.map(u => `<option value="${u.nombre}">${u.nombre} (${u.rol})</option>`).join('');
+  }
+
+  if (pills) {
+    const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
+    pills.innerHTML = USUARIOS_BD.map(u => {
+      const pwd = demoPwds[u.nombre] || '';
+      return `<button type="button" class="demo-pill" data-usr="${u.nombre}" data-pwd="${pwd}">👤 ${u.nombre} [${u.rol}]</button>`;
+    }).join('');
+
+    pills.querySelectorAll('.demo-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = btn.dataset.usr;
+        const p = btn.dataset.pwd;
+        const inputU = document.getElementById('inputUsuario');
+        const inputP = document.getElementById('inputPassword');
+        if (inputU) inputU.value = u;
+        if (inputP && p) inputP.value = p;
+        snack(`👉 Credenciales cargadas para "${u}"`);
+      });
+    });
+  }
+}
+
+function actualizarSourceLabel() {
+  poblarSelectorUsuarios();
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -682,6 +715,18 @@ function bindEvents() {
       document.getElementById('panelLogin').hidden    = tab !== 'login';
       document.getElementById('panelRegistro').hidden = tab !== 'registro';
     });
+  });
+
+  // Selector de usuario combo
+  document.getElementById('selectUsuario')?.addEventListener('change', e => {
+    const val = e.target.value;
+    if (!val) return;
+    const inputU = document.getElementById('inputUsuario');
+    const inputP = document.getElementById('inputPassword');
+    if (inputU) inputU.value = val;
+    const demoPwds = { operador1: 'oper2026', ingeniero1: 'ing2026', gerente1: 'ger2026' };
+    if (inputP && demoPwds[val]) inputP.value = demoPwds[val];
+    snack(`👉 Usuario "${val}" seleccionado`);
   });
 
   // Login Submit
@@ -865,6 +910,7 @@ async function init() {
   resizeCanvas();
   bindEvents();
   cargarUsuariosLocales();
+  poblarSelectorUsuarios();
   resetSistema();
   renderLoop();
 }
