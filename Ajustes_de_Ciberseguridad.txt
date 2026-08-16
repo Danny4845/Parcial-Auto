@@ -1,0 +1,123 @@
+================================================================================
+INFORME DE MEDIDAS Y AJUSTES DE CIBERSEGURIDAD IMPLEMENTADOS EN EL SISTEMA SCADA
+================================================================================
+
+Este documento resume de forma clara y detallada todas las capas de seguridad,
+criptografía y mecanismos de protección implementados en el sistema SCADA/HMI 
+para el control de acceso del estacionamiento automatizado.
+
+
+--------------------------------------------------------------------------------
+1. AUTENTICACIÓN ROBUSTA Y GESTIÓN DE CONTRASEÑAS (PBKDF2 + SALT)
+--------------------------------------------------------------------------------
+* Ninguna contraseña se guarda en texto plano en ninguna parte del sistema.
+* Para cada usuario creado, el sistema genera automáticamente un "Salt" aleatorio
+  criptográficamente seguro mediante Web Crypto API (crypto.getRandomValues).
+* Se aplica el estándar PBKDF2 con 100.000 iteraciones utilizando HMAC-SHA256 
+  para derivar el hash final de la contraseña.
+* Esto anula completamente la efectividad de ataques con tablas arcoíris (Rainbow
+  Tables) y ataques de fuerza bruta basados en diccionarios precálculados.
+* La interfaz incluye validación y un medidor de entropía/fuerza de contraseña en
+  tiempo real que exige longitud adecuada, mayúsculas, números y caracteres especiales.
+
+
+--------------------------------------------------------------------------------
+2. PROTECCIÓN CONTRA ATAQUES DE FUERZA BRUTA (ACCOUNT LOCKOUT & RATE LIMITING)
+--------------------------------------------------------------------------------
+* Se implementó un control de intentos fallidos de inicio de sesión:
+  - Si un usuario ingresa credenciales erróneas 5 veces consecutivas, el sistema
+    activa un bloqueo de seguridad temporal por 30 segundos (Account Lockout).
+  - Durante el tiempo de bloqueo, el formulario rechaza cualquier intento sin 
+    procesar derivaciones criptográficas, protegiendo los recursos contra saturación.
+  - Al autenticarse correctamente, el contador de intentos fallidos se restablece a cero.
+
+
+--------------------------------------------------------------------------------
+3. FIRMA DIGITAL DE COMANDOS CRIPTOGRÁFICOS (HMAC-SHA256)
+--------------------------------------------------------------------------------
+* Cada vez que un usuario presiona un botón físico (Inicio, Reset, Simular Entrada,
+  Simular Salida, Forzar Portón o Ajustar Tiempos), el sistema no ejecuta la acción
+  directamente.
+* En su lugar, empaqueta la orden con su usuario, rol, timestamp y nonce, y le 
+  genera una firma digital HMAC-SHA256 con una clave criptográfica almacenada 
+  en memoria volátil.
+* Antes de que el actuador se mueva, una rutina de validación verifica la firma. 
+  Si la firma es inválida o fue alterada, la orden se rechaza de inmediato.
+
+
+--------------------------------------------------------------------------------
+4. PROTECCIÓN ANTI-REPETICIÓN (ANTI-REPLAY ATTACK PREVENTION)
+--------------------------------------------------------------------------------
+Para evitar que un atacante intercepte un comando válido (por ejemplo, "Abrir Portón")
+y lo vuelva a reenviar más tarde para abrir el estacionamiento sin autorización:
+* Nonce Único: Cada comando lleva un identificador único universal (UUID v4). El
+  sistema mantiene un registro de nonces ya utilizados y bloquea duplicados.
+* Ventana de Expiración Temporal: Todo comando cuya antigüedad supere los 5 segundos 
+  es descartado automáticamente como expirado.
+* Número de Secuencia Incremental: Garantiza el orden estricto de los eventos.
+
+
+--------------------------------------------------------------------------------
+5. CONTROL DE ACCESO BASADO EN ROLES (RBAC ESTRICTO Y JERÁRQUICO)
+--------------------------------------------------------------------------------
+El sistema implementa el principio de menor privilegio (Least Privilege) con 3 roles:
+
+* Operador (Nivel Control):
+  - Puede: Ver estado del garaje, iniciar/reiniciar simulación, generar entradas y salidas.
+  - NO puede: Forzar el portón manual, modificar tiempos de semáforos, crear usuarios ni ver logs.
+
+* Supervisor / Ingeniero (Nivel Planta):
+  - Puede: Todo lo del Operador + Forzar portón manual + Modificar tiempos del semáforo SP + 
+    Ver logs criptográficos + Crear usuarios con rol Operador.
+  - NO puede: Ver métricas gerenciales de consumo ni crear otros Supervisores o Gerentes.
+
+* Gerente (Nivel Administración Total):
+  - Acceso irrestricto: Métricas de consumo energético, auditoría completa, exportación de CSV,
+    control de actuadores y facultad de registrar usuarios Supervisores y Operadores.
+
+* Doble Validación: La seguridad de roles se valida tanto en la interfaz (ocultando botones)
+  como a nivel de código interno antes de ejecutar cualquier función o despacho de la IA.
+
+
+--------------------------------------------------------------------------------
+6. REGISTRO DE AUDITORÍA INMUTABLE (HASH CHAIN CRIPTOGRÁFICO SHA-256)
+--------------------------------------------------------------------------------
+* Cada evento relevante (inicios de sesión, activación de sensores E1/E2/S1/S2, 
+  bloqueos de seguridad, maniobras de portón y órdenes del asistente IA) se registra
+  en una cadena inmutable tipo Blockchain ligero.
+* Cada registro calcula su propio Hash SHA-256 combinando:
+  Hash_Actual = SHA-256(Hash_Anterior + Timestamp + Usuario + Rol + Mensaje + ID)
+* El sistema cuenta con un botón de "Verificar Integridad" que recalcula toda la
+  cadena desde el génesis. Si alguien modifica o elimina un solo registro en la base
+  de datos local, la verificación falla alertando sobre manipulación indebida.
+* Permite exportar la auditoría completa en formato CSV firmado.
+
+
+--------------------------------------------------------------------------------
+7. SEGURIDAD Y PRIVACIDAD EN EL ASISTENTE DE INTELIGENCIA ARTIFICIAL (IA / n8n)
+--------------------------------------------------------------------------------
+* Arquitectura Backend Segura: El navegador NUNCA almacena ni expone la API Key de
+  Google Gemini. La clave reside 100% protegida en las variables de entorno del 
+  servidor de n8n.
+* Eliminación de Paneles de Configuración en Cliente: Se eliminó el botón de configuración 
+  del chat en la interfaz pública para evitar que usuarios curiosos alteren los webhooks.
+* Activación Condicional: El botón del Asistente de IA permanece oculto en la pantalla 
+  de login y solo se activa cuando un usuario inicia sesión.
+* Guardrails de Dominio: El asistente rechaza amablemente consultas que no pertenezcan al 
+  ámbito del SCADA (chistes, programación externa, temas ajenos).
+* Ejecución Sujeta a Permisos: Si un Operador le pide al asistente abrir el portón o 
+  cambiar tiempos, la IA consulta el rol del usuario y deniega la orden por falta de privilegios.
+
+
+--------------------------------------------------------------------------------
+8. CABECERAS DE SEGURIDAD EN EL NAVEGADOR
+--------------------------------------------------------------------------------
+Se integraron cabeceras estrictas en las etiquetas meta del HTML:
+* Content-Security-Policy (CSP): Restringe la carga de scripts, estilos y fuentes 
+  únicamente a dominios de confianza autorizados (Google Fonts, Webhooks de n8n).
+* X-Frame-Options (DENY): Bloquea que el SCADA sea incrustado dentro de un <iframe> 
+  en sitios externos, neutralizando ataques de Clickjacking.
+* X-Content-Type-Options (nosniff): Evita que el navegador interprete archivos 
+  con tipos MIME incorrectos o maliciosos.
+* Referrer-Policy (no-referrer): Oculta información de procedencia al realizar peticiones externas.
+================================================================================

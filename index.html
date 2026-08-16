@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SCADA — Control de Acceso de Estacionamiento | III Parcial</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com https://agentes.henkki.co https:;" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta name="referrer" content="no-referrer" />
+  <title>SCADA — Control de Acceso de Estacionamiento</title>
   <meta name="description" content="Sistema SCADA/HMI Ciberfísico para control de acceso a estacionamiento automatizado con PBKDF2, HMAC y RBAC por Jerarquía." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,7 +22,6 @@
       <div class="auth-logo">
         <h1>SCADA Industrial</h1>
         <p class="auth-subtitle">Control de Acceso — Estacionamiento 100 Plazas</p>
-        <div class="security-badge">PBKDF2 · SHA-256 · HMAC · RBAC Estricto</div>
       </div>
 
       <!-- Formulario Registro Gerente Inicial (Bootstrapping) -->
@@ -44,7 +50,7 @@
           </div>
 
           <div class="field-group">
-            <label for="bootPwdConf">Confirmar Contraseña</label>
+            <label for="bootPwdConf">Confirmar contraseña</label>
             <div class="input-wrapper">
               <input type="password" id="bootPwdConf" placeholder="" autocomplete="new-password" />
               <button type="button" class="toggle-pwd" id="btnBootEye2">Ver</button>
@@ -54,19 +60,20 @@
           <div id="bootError" class="auth-error" hidden></div>
           <div id="bootOk"    class="auth-ok"    hidden></div>
 
-          <button type="submit" id="btnCrearGerenteBoot" class="btn-primary">
-            <span>Registrar Gerente Inicial</span>
+          <button type="submit" id="btnBootRegistrar" class="btn-primary">
+            <span>Crear Gerente Inicial</span>
+            <div id="bootSpinner" class="spinner" hidden></div>
           </button>
         </form>
       </div>
 
-      <!-- Formulario Inicio de Sesión -->
+      <!-- Formulario Login Regular -->
       <div id="panelLogin" class="tab-panel">
         <form id="loginForm" class="auth-form" autocomplete="off">
           <div class="field-group">
-            <label for="inputUsuario">Nombre de Usuario</label>
+            <label for="inputUsuario">Nombre de usuario</label>
             <div class="input-wrapper">
-              <input type="text" id="inputUsuario" placeholder="" autocomplete="username" spellcheck="false" />
+              <input type="text" id="inputUsuario" placeholder="" maxlength="30" spellcheck="false" autocomplete="off" />
             </div>
           </div>
 
@@ -74,11 +81,11 @@
             <label for="inputPassword">Contraseña</label>
             <div class="input-wrapper">
               <input type="password" id="inputPassword" placeholder="" autocomplete="current-password" />
-              <button type="button" id="btnTogglePwd" class="toggle-pwd" title="Mostrar contraseña">Ver</button>
+              <button type="button" class="toggle-pwd" id="btnTogglePwd">Ver</button>
             </div>
           </div>
 
-          <div id="loginError" class="auth-error" hidden>Credenciales incorrectas</div>
+          <div id="loginError" class="auth-error" hidden></div>
 
           <button type="submit" id="btnLogin" class="btn-primary">
             <span id="loginBtnText">Iniciar Sesión</span>
@@ -86,11 +93,10 @@
           </button>
         </form>
       </div>
-
     </div>
   </div>
 
-  <!-- Dashboard Principal SCADA -->
+  <!-- Aplicación Principal SCADA -->
   <div id="app" class="app" hidden>
 
     <!-- Header Principal -->
@@ -99,7 +105,7 @@
         <div class="logo-badge">SCADA</div>
         <div>
           <h1 class="system-title">Estacionamiento Automatizado</h1>
-          <p class="system-sub">III Parcial · Daniel Colmenares & Hernaldo Pérez Roa</p>
+          <p class="system-sub">Control de Acceso y Gestión Ciberfísica 100 Plazas</p>
         </div>
       </div>
 
@@ -110,7 +116,7 @@
         </div>
         <div class="pa-badge" id="paHeaderBadge">
           <span class="pa-dot" id="paDot"></span>
-          <span id="paStateText">PA: INACTIVO</span>
+          <span id="paStateText">PASO VEHICULAR: EN ESPERA</span>
         </div>
       </div>
 
@@ -136,7 +142,7 @@
         <!-- Estado Ocupación -->
         <div class="scada-card">
           <div class="card-header">
-            <span>Capacidad del Garaje</span>
+            <span>Capacidad del Estacionamiento</span>
             <span class="badge-total">100 Max</span>
           </div>
           <div class="plaza-counter-wrap">
@@ -162,7 +168,7 @@
               <span>INICIO</span>
             </button>
             <button id="btnReset" class="btn-ctrl btn-reset">
-              <span>RESET (CI)</span>
+              <span>REINICIAR</span>
             </button>
           </div>
           <div class="sim-grid">
@@ -188,10 +194,10 @@
         <!-- Ajuste de Parámetros Supervisor -->
         <div id="panelIngeniero" class="scada-card card-engineer" hidden>
           <div class="card-header">
-            <span>Panel del Supervisor</span>
+            <span>Panel de Configuración</span>
           </div>
           <div class="eng-controls">
-            <button id="btnForzarPorton" class="btn-ctrl btn-warn">Forzar Abrir/Cerrar Portón</button>
+            <button id="btnForzarPorton" class="btn-ctrl btn-warn">Abrir/Cerrar Portón Manual</button>
             <div class="time-adjust">
               <label>Tiempo Verde SP (s):</label>
               <input type="number" id="inputTiempoVerde" value="20" min="5" max="120" />
@@ -218,7 +224,7 @@
           <!-- Métricas Gerenciales -->
           <div id="panelGerente" class="scada-card card-metrics" hidden>
             <div class="card-header">
-              <span>Métricas Gerenciales (ERP)</span>
+              <span>Métricas del Estacionamiento</span>
             </div>
             <div class="metrics-grid">
               <div class="metric-item">
@@ -231,11 +237,11 @@
               </div>
               <div class="metric-item">
                 <span class="metric-val" id="metCiclos">0</span>
-                <span class="metric-lbl">Ciclos Portón</span>
+                <span class="metric-lbl">Ciclos del Portón</span>
               </div>
               <div class="metric-item">
                 <span class="metric-val" id="metEnergia">0 Wh</span>
-                <span class="metric-lbl">Consumo Est.</span>
+                <span class="metric-lbl">Consumo Aprox.</span>
               </div>
             </div>
           </div>
@@ -243,8 +249,11 @@
           <!-- Log de Auditoría -->
           <div id="panelLog" class="scada-card card-log" hidden>
             <div class="card-header">
-              <span>Log de Auditoría & Ciberseguridad</span>
-              <button id="btnExportLog" class="btn-export-log">Exportar CSV</button>
+              <span>Registro de Actividad</span>
+              <div style="display:flex; gap:6px;">
+                <button id="btnVerifyLog" class="btn-export-log" title="Verificar cadena criptográfica SHA-256">Verificar Integridad</button>
+                <button id="btnExportLog" class="btn-export-log">Exportar CSV</button>
+              </div>
             </div>
             <div id="auditLog" class="audit-log"></div>
           </div>
@@ -394,6 +403,88 @@
 
       <div class="modal-footer-bar">
         <button id="btnReturnToLogin" class="btn-return-login">Volver al SCADA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Burbuja Flotante de IA (Chatbot de Operaciones SCADA) -->
+  <button id="btnAiFab" class="ai-fab" title="Asistente de Operaciones SCADA (Gemini AI)" aria-label="Abrir Asistente de IA" hidden>
+    <span class="ai-fab-icon">🤖</span>
+    <span class="ai-fab-pulse"></span>
+    <span class="ai-fab-badge">IA</span>
+  </button>
+
+  <!-- Panel de Chat de IA Agéntica -->
+  <div id="aiChatDrawer" class="ai-chat-drawer" hidden>
+    <div class="ai-chat-header">
+      <div class="ai-header-info">
+        <div class="ai-bot-avatar">🤖</div>
+        <div>
+          <div class="ai-bot-title">Asistente SCADA</div>
+          <div class="ai-bot-subtitle">Google Gemini Agéntico · <span id="aiUserRole">Rol: —</span></div>
+        </div>
+      </div>
+      <div class="ai-header-actions">
+        <button id="btnAiConfig" class="btn-ai-icon" title="Configuración Segura" style="display:none;">⚙️</button>
+        <button id="btnAiClose" class="btn-ai-icon" title="Cerrar Chat">✕</button>
+      </div>
+    </div>
+
+    <!-- Quick Chips Sugerencias -->
+    <div class="ai-quick-chips">
+      <button class="ai-chip" data-prompt="¿Cuántas plazas hay disponibles y cuál es el estado del estacionamiento?">📊 Plazas</button>
+      <button class="ai-chip" data-prompt="¿Cuál es el estado actual del portón y los semáforos?">🚪 Portón / Semáforos</button>
+      <button class="ai-chip" data-prompt="Simula la llegada de un vehículo por la entrada E1">🚗 Entrada (E1)</button>
+      <button class="ai-chip" data-prompt="Verifica la integridad de los registros de auditoría">🛡️ Integridad</button>
+      <button class="ai-chip" data-prompt="Muestra las métricas de entradas, salidas y consumo">📈 Métricas</button>
+    </div>
+
+    <!-- Lista de Mensajes -->
+    <div id="aiChatMessages" class="ai-chat-messages">
+      <div class="ai-msg ai-msg-bot">
+        <div class="ai-msg-bubble">
+          👋 ¡Hola! Soy el <strong>Asistente Agéntico de Operaciones</strong> con Google Gemini.
+          <br><br>
+          Puedo responder tus consultas sobre el estado del garaje o ejecutar comandos en tiempo real según tu rol. ¿En qué puedo ayudarte?
+        </div>
+        <span class="ai-msg-time">En línea</span>
+      </div>
+    </div>
+
+    <!-- Input de Chat -->
+    <form id="aiChatForm" class="ai-chat-input-area">
+      <input type="text" id="aiChatInput" placeholder="Consulta o comando en lenguaje natural…" autocomplete="off" />
+      <button type="submit" id="btnAiSend" class="btn-ai-send" title="Enviar">➤</button>
+    </form>
+  </div>
+
+  <!-- Modal de Configuración de API Key Gemini / n8n Webhook -->
+  <div id="aiConfigModal" class="modal-overlay" hidden>
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>Configuración del Asistente IA</span>
+        </div>
+        <button id="btnCloseAiConfig" class="btn-close-modal">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div class="field-group">
+          <label for="inputGeminiKey">Google Gemini API Key:</label>
+          <div class="input-wrapper">
+            <input type="password" id="inputGeminiKey" placeholder="Pega tu API Key de Gemini aquí (AIzaSy...)" autocomplete="off" />
+          </div>
+          <span class="field-hint">Se guarda de forma segura en tu navegador para realizar consultas directas y tool-calling a Google Gemini.</span>
+        </div>
+        <div class="field-group" style="margin-top: 14px;">
+          <label for="inputN8nWebhook">Webhook opcional de n8n (URL):</label>
+          <div class="input-wrapper">
+            <input type="text" id="inputN8nWebhook" placeholder="https://tu-instancia-n8n.com/webhook/scada-ai" autocomplete="off" />
+          </div>
+          <span class="field-hint">Opcional: Si ejecutas un flujo de n8n, ingresa la URL de tu Webhook.</span>
+        </div>
+      </div>
+      <div class="modal-footer-bar">
+        <button id="btnSaveAiConfig" class="btn-primary" style="padding: 8px 16px;">Guardar Configuración</button>
       </div>
     </div>
   </div>
