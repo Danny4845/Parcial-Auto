@@ -351,8 +351,8 @@ function drawScene() {
 
   // 7. Sensores 3D con Tarjetas Informativas Claras
   const e1x = cwX2 + (W - cwX2) * 0.55, e1y = entY;
-  const e2x = gW * 0.42,                e2y = entY;   // Alejado del portón
-  const s1x = gW * 0.42,                s1y = salY;   // Alejado del portón
+  const e2x = gW * 0.55,                e2y = entY;   // Justo al lado de la flecha
+  const s1x = gW * 0.55,                s1y = salY;   // Justo al lado de la flecha
   const s2x = cwX2 + (W - cwX2) * 0.55, s2y = salY;
 
   draw3DSensor(e1x, e1y, 'Sensor E1', 'Llegada', EST.E1, '#00f0ff', lH);
@@ -638,7 +638,7 @@ function draw3DLaneSegment(x, centerY, w, h, label, neonAccent, darkAccent, dir)
   ctx.shadowBlur = 0;
 
   // Flechas direccionales de gran tamaño
-  const arrowX1 = w * 0.27, arrowX2 = w * 0.72;
+  const arrowX1 = w * 0.295, arrowX2 = w * 0.72;
   draw3DRoadArrow(arrowX1, centerY, dir === 'left' ? Math.PI : 0, neonAccent);
   draw3DRoadArrow(arrowX2, centerY, dir === 'left' ? Math.PI : 0, neonAccent);
 
@@ -1370,7 +1370,7 @@ function updateVehiculos(dt) {
   const entY = topHudH + simH * 0.35, salY = topHudH + simH * 0.68;
   const gW = W * 0.38, cwX2 = gW + W * 0.22;
   const e1X = cwX2 + (W - cwX2) * 0.55;
-  const e2X = gW * 0.42;   // Sincronizado con la posición visual del Sensor E2
+  const e2X = gW * 0.55;   // Sincronizado con la posición visual del Sensor E2
   const s2X = cwX2 + (W - cwX2) * 0.55;
   const vW = Math.max(54, ANIM.cssW * 0.062);
   const stopEntradaX = cwX2 + vW * 0.5 + 24;
@@ -1442,7 +1442,7 @@ function updateVehiculos(dt) {
     if (v.fase === 'llegando') {
       // Igual que entrada pero hacia la derecha: avanza desde el garaje al stop
       v.x += v.speed * dt;
-      const s1X = gW * 0.42; // Sincronizado con la posición visual del Sensor S1
+      const s1X = gW * 0.55; // Sincronizado con la posición visual del Sensor S1
       if (v.x >= s1X && !v.s1Triggered) {
         v.s1Triggered = true;
         activarSensor('S1');
