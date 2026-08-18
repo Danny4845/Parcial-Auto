@@ -444,16 +444,13 @@ html, body {
 }
 .ai-fab:hover { transform: scale(1.1) rotate(6deg); box-shadow: 0 12px 32px rgba(0, 240, 255, 0.7); }
 .ai-fab-icon {
-  width: 46px;
-  height: 46px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  /* Desplazamos el zoom para recortar el fondo blanco de las esquinas */
   object-position: center center;
-  transform: scale(1.18);
   display: block;
   pointer-events: none;
-  overflow: hidden;
 }
 .ai-fab-badge {
   position: absolute; top: -3px; right: -3px;
