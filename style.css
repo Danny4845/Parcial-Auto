@@ -440,9 +440,21 @@ html, body {
   border: 2px solid rgba(255, 255, 255, 0.4); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all .25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
 }
 .ai-fab:hover { transform: scale(1.1) rotate(6deg); box-shadow: 0 12px 32px rgba(0, 240, 255, 0.7); }
-.ai-fab-icon { font-size: 1.55rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+.ai-fab-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  /* Desplazamos el zoom para recortar el fondo blanco de las esquinas */
+  object-position: center center;
+  transform: scale(1.18);
+  display: block;
+  pointer-events: none;
+  overflow: hidden;
+}
 .ai-fab-badge {
   position: absolute; top: -3px; right: -3px;
   background: #ff0055; color: #fff; font-size: .52rem; font-weight: 800;
