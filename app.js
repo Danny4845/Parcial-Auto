@@ -1619,6 +1619,7 @@ function resetSistema() {
   clearTimeout(EST._paTimer); clearTimeout(EST._paOffTimer);
   clearInterval(cooldownE1Interval); clearInterval(cooldownS1Interval);
   cooldownE1Restante = 0; cooldownS1Restante = 0;
+  window._aiPendingAction = null;
 
   Object.assign(EST, {
     sistemaActivo: false, plazasOcupadas: 0, semEntrada: 'rojo', semSalida: 'rojo', semPeatonal: 'rojo',
@@ -2472,6 +2473,7 @@ const AI_TOOLS = {
       if (!puedeDo('inicio')) return { exito: false, error: `Rol "${rol}" no tiene permiso para iniciar el sistema.` };
       const { payload, firma } = await signCommand('INICIO');
       if (!await verifyCommand(payload, firma)) return { exito: false, error: 'Firma HMAC inválida.' };
+      window._aiPendingAction = null;
       EST.sistemaActivo = true; EST.semEntrada = 'azul'; iniciarCicloSP(); actualizarUI();
       log(`Asistente IA: Sistema iniciado por orden de ${sesion.nombre}`, 'ok');
       return { exito: true, mensaje: 'Sistema SCADA iniciado exitosamente y ciclo de semáforo SP activado.' };
@@ -2480,6 +2482,7 @@ const AI_TOOLS = {
       if (!puedeDo('reset')) return { exito: false, error: `Rol "${rol}" no tiene permiso para reiniciar o detener el sistema.` };
       const { payload, firma } = await signCommand('RESET');
       if (!await verifyCommand(payload, firma)) return { exito: false, error: 'Firma HMAC inválida.' };
+      window._aiPendingAction = null;
       resetSistema();
       log(`Asistente IA: Simulación reiniciada a Condiciones Iniciales (CI) por ${sesion.nombre}`, 'warn');
       return { exito: true, mensaje: 'Simulación reiniciada a Condiciones Iniciales: sistema detenido, portón cerrado y 100 plazas disponibles.' };
@@ -2490,19 +2493,26 @@ const AI_TOOLS = {
       }
       if (EST.plazasOcupadas >= 100) return { exito: false, error: 'Estacionamiento lleno (100/100).' };
 
-      // Si el sistema no estaba activo, se inicia automáticamente para una operación fluida
+      // Si la simulación está apagada, SOLO activar el sistema y pedir confirmación
       if (!EST.sistemaActivo) {
         EST.sistemaActivo = true;
         EST.semEntrada = 'azul';
         iniciarCicloSP();
-        log('Sistema iniciado automáticamente al solicitar entrada de vehículo', 'ok');
+        actualizarUI();
+        window._aiPendingAction = { tipo: 'entrada', timestamp: Date.now() };
+        log(`Asistente IA: Simulación iniciada tras solicitud de entrada de ${sesion.nombre}`, 'ok');
+        return {
+          exito: true,
+          requiereConfirmacion: true,
+          mensaje: 'He activado la simulación del sistema SCADA exitosamente.\n\n¿Deseas que proceda a ingresar el vehículo ahora?'
+        };
       }
 
       iniciarCooldownE1(3);
       EST.vehiculos.push(crearVehiculoEntrada());
       actualizarUI();
       log(`Asistente IA: Vehículo ingresado por ${sesion.nombre} (E1)`, 'info');
-      return { exito: true, mensaje: 'Simulación iniciada y vehículo aproximándose por el sensor de entrada (E1).' };
+      return { exito: true, mensaje: 'Vehículo aproximándose por el sensor de entrada (E1).' };
     }
     if (accion === 'simular_salida') {
       if (!puedeDo('simS1') || cooldownS1Restante > 0) {
@@ -2510,12 +2520,19 @@ const AI_TOOLS = {
       }
       if (EST.plazasOcupadas === 0) return { exito: false, error: 'El estacionamiento está vacío (0 vehículos ocupando plazas).' };
 
-      // Si el sistema no estaba activo, se inicia automáticamente para una operación fluida
+      // Si la simulación está apagada, SOLO activar el sistema y pedir confirmación
       if (!EST.sistemaActivo) {
         EST.sistemaActivo = true;
         EST.semEntrada = 'azul';
         iniciarCicloSP();
-        log('Sistema iniciado automáticamente al solicitar salida de vehículo', 'ok');
+        actualizarUI();
+        window._aiPendingAction = { tipo: 'salida', timestamp: Date.now() };
+        log(`Asistente IA: Simulación iniciada tras solicitud de salida de ${sesion.nombre}`, 'ok');
+        return {
+          exito: true,
+          requiereConfirmacion: true,
+          mensaje: 'He activado la simulación del sistema SCADA exitosamente.\n\n¿Deseas que proceda a registrar la salida del vehículo ahora?'
+        };
       }
 
       iniciarCooldownS1(3);
@@ -2523,7 +2540,7 @@ const AI_TOOLS = {
       activarSensor('S1');
       actualizarUI();
       log(`Asistente IA: Vehículo en salida por ${sesion.nombre} (S1)`, 'info');
-      return { exito: true, mensaje: 'Simulación iniciada y vehículo demandando salida por el sensor S1.' };
+      return { exito: true, mensaje: 'Vehículo demandando salida por el sensor S1. Prioridad concedida.' };
     }
     if (accion === 'forzar_porton') {
       if (!puedeDo('forzarPorton')) return { exito: false, error: `Acceso denegado: Tu rol de ${rol} no tiene privilegios para forzar el portón manual (Requiere Supervisor o Gerente).` };
@@ -2591,6 +2608,43 @@ async function processAiPrompt(prompt) {
   appendAiMessage('user', prompt);
   const sendBtn = document.getElementById('btnAiSend');
   if (sendBtn) sendBtn.disabled = true;
+
+  // Detección de confirmación de acción pendiente (ej: entrar/salir vehículo tras iniciar simulación)
+  const pLower = prompt.trim().toLowerCase();
+  const isConfirm = /\b(si|sí|confirmo|confirmar|procede|proceder|ingresalo|ingrésalo|sacalo|sácalo|entra|dale|adelante|hazlo|claro|por favor|adelante|ok|afirmativo|positivo)\b/i.test(pLower);
+  const isDeny = /\b(no|cancela|cancelar|deten|parar|espera|todavia no|todavía no)\b/i.test(pLower);
+
+  if (window._aiPendingAction && (Date.now() - window._aiPendingAction.timestamp < 300000)) {
+    if (isConfirm) {
+      const tipo = window._aiPendingAction.tipo;
+      window._aiPendingAction = null;
+      if (tipo === 'entrada') {
+        iniciarCooldownE1(3);
+        EST.vehiculos.push(crearVehiculoEntrada());
+        actualizarUI();
+        log(`Asistente IA: Entrada de vehículo confirmada por ${sesion.nombre}`, 'info');
+        appendAiMessage('bot', '✅ Confirmación recibida. El vehículo está ingresando por el sensor de entrada (E1).', 'Entrada E1');
+      } else if (tipo === 'salida') {
+        if (EST.plazasOcupadas > 0) {
+          iniciarCooldownS1(3);
+          EST.vehiculos.push(crearVehiculoSalida());
+          activarSensor('S1');
+          actualizarUI();
+          log(`Asistente IA: Salida de vehículo confirmada por ${sesion.nombre}`, 'info');
+          appendAiMessage('bot', '✅ Confirmación recibida. El vehículo está saliendo por el sensor S1.', 'Salida S1');
+        } else {
+          appendAiMessage('bot', '⚠️ El estacionamiento está vacío (0 vehículos ocupando plazas).', 'Salida S1', true);
+        }
+      }
+      if (sendBtn) sendBtn.disabled = false;
+      return;
+    } else if (isDeny) {
+      window._aiPendingAction = null;
+      appendAiMessage('bot', 'Entendido, acción cancelada. La simulación continuará activa sin ingresar el vehículo.', 'Operación Cancelada');
+      if (sendBtn) sendBtn.disabled = false;
+      return;
+    }
+  }
 
   try {
     // 1. Si existe URL de Webhook en n8n, enviamos la petición al flujo de n8n
@@ -2661,6 +2715,8 @@ async function processAiPrompt(prompt) {
               const actRes = await AI_TOOLS.ejecutar_comando(cmd, prompt);
               if (!actRes.exito) {
                 appendAiMessage('bot', `${outText}\n\n⚠️ *${actRes.error}*`, `n8n Agente: ${cmd}`, true);
+              } else if (actRes.requiereConfirmacion) {
+                appendAiMessage('bot', actRes.mensaje, 'Asistente SCADA: Confirmación');
               } else {
                 appendAiMessage('bot', outText, `n8n Agente: ${cmd}`);
               }
