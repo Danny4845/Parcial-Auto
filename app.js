@@ -290,10 +290,11 @@ function resizeCanvas() {
   ANIM.cssW = cssW;
   ANIM.cssH = cssH;
 
+  // Solo actualizamos el buffer interno del canvas (para DPR).
+  // El tamaño visual lo controla el CSS (width: 100%; height: 100%)
+  // para evitar el bucle de retroalimentación con el layout flex.
   canvas.width  = Math.floor(cssW * dpr);
   canvas.height = Math.floor(cssH * dpr);
-  canvas.style.width  = cssW + 'px';
-  canvas.style.height = cssH + 'px';
 }
 
 function roundRect(ctx, x, y, w, h, r) {
