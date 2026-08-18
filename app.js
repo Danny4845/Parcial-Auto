@@ -2693,12 +2693,12 @@ async function processAiPrompt(prompt) {
               const esSoloConsulta = p.includes('cual es') || p.includes('quien soy') || p.includes('cuantas') || p.includes('que rol') || p.includes('dime mi') || p.includes('resumen') || p.includes('historial');
               
               if (!esSoloConsulta) {
-                if (/\b(paus|deten|parar|para|paralo|fren|apaga|detener)\w*/i.test(p)) {
-                  cmd = 'detener';
-                } else if (/\b(inici|arranc|empiez|empez|comienz|comenz|activ|prende|prender)\w*/i.test(p) || p.includes('iniciar') || p.includes('inicia') || p.includes('activar') || p.includes('simulacion') || p.includes('simulación')) {
-                  cmd = 'iniciar';
-                } else if (/\b(reinici|reset|restablec)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales')) {
+                // 1. Reiniciar / Detener / Pausar / CI (evaluado primero para que 'reinicia' no coincida con 'inicia')
+                if (/\b(reinici|reset|restablec|deten|paus|parar|paralo|fren|apaga)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p)) {
                   cmd = 'reiniciar';
+                // 2. Iniciar / Arrancar / Activar
+                } else if (/\b(inici|arranc|empiez|empez|comienz|comenz|activ|prende|prender)\w*/i.test(p) || /\b(iniciar|inicia|arrancar|activar)\b/i.test(p) || p.includes('simulacion') || p.includes('simulación')) {
+                  cmd = 'iniciar';
                 } else if (/\b(salid|sacar|egres)\w*/i.test(p) || /\bsal\b/i.test(p) || p.includes('s1')) {
                   cmd = 'simular_salida';
                 } else if (/\b(entr|ingres|auto|carro|coche|vehiculo|lleg)\w*/i.test(p) || p.includes('e1')) {
@@ -2923,15 +2923,17 @@ async function ejecutarMotorAgenteLocal(prompt) {
     return;
   }
 
-  if (p.includes('inicia') || p.includes('arranca') || p.includes('prende')) {
-    const res = await AI_TOOLS.ejecutar_comando('iniciar');
-    appendAiMessage('bot', res.exito ? `▶️ **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: iniciar', !res.exito);
+  // 5. Reiniciar o Detener (evaluado primero para no colisionar con 'inicia')
+  if (/\b(reinici|reset|deten|paus|parar|paralo|frena|apaga)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p)) {
+    const res = await AI_TOOLS.ejecutar_comando('reiniciar');
+    appendAiMessage('bot', res.exito ? `🔄 **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: reiniciar', !res.exito);
     return;
   }
 
-  if (p.includes('reinicia') || p.includes('reset') || p.includes('ci')) {
-    const res = await AI_TOOLS.ejecutar_comando('reiniciar');
-    appendAiMessage('bot', res.exito ? `🔄 **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: reiniciar', !res.exito);
+  // 6. Iniciar simulación
+  if (/\b(inici|arranc|empiez|empez|comienz|comenz|activ|prende)\w*/i.test(p) || /\b(inicia|iniciar|arrancar|activar)\b/i.test(p)) {
+    const res = await AI_TOOLS.ejecutar_comando('iniciar');
+    appendAiMessage('bot', res.exito ? `▶️ **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: iniciar', !res.exito);
     return;
   }
 
