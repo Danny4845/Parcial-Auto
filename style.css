@@ -433,8 +433,12 @@ html, body {
 
 /* Widget Chatbot Flotante IA (Gemini / n8n) */
 .ai-fab {
-  position: fixed; bottom: 22px; right: 22px; z-index: 1500;
-  width: 54px; height: 54px; border-radius: 50%;
+  /* Reposicionado al espacio vacío del panel lateral izquierdo */
+  position: fixed;
+  left: 87px;          /* centrado en el panel de 250px: (250 - 76) / 2 */
+  bottom: 116px;       /* por encima de los 100px del panel inferior */
+  z-index: 1500;
+  width: 76px; height: 76px; border-radius: 50%;
   background: linear-gradient(135deg, #00f0ff, #00f59b);
   box-shadow: 0 8px 25px rgba(0, 240, 255, 0.45), 0 0 15px rgba(0, 245, 155, 0.35);
   border: 2px solid rgba(255, 255, 255, 0.4); cursor: pointer;
@@ -469,8 +473,13 @@ html, body {
 }
 
 .ai-chat-drawer {
-  position: fixed; bottom: 84px; right: 22px; width: 380px; height: 530px;
-  max-height: calc(100vh - 100px); max-width: calc(100vw - 44px);
+  /* Abre a la derecha del panel lateral */
+  position: fixed;
+  bottom: 116px;
+  left: 262px;         /* justo al borde derecho del panel lateral (250px + gap) */
+  right: auto;
+  width: 380px; height: 530px;
+  max-height: calc(100vh - 130px); max-width: calc(100vw - 270px);
   z-index: 1500; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(18px);
   border: 1px solid var(--border-bright); border-radius: var(--radius-lg);
   box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(0, 240, 255, 0.25);

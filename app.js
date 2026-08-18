@@ -638,7 +638,7 @@ function draw3DLaneSegment(x, centerY, w, h, label, neonAccent, darkAccent, dir)
   ctx.shadowBlur = 0;
 
   // Flechas direccionales de gran tamaño
-  const arrowX1 = w * 0.15, arrowX2 = w * 0.65;
+  const arrowX1 = w * 0.27, arrowX2 = w * 0.72;
   draw3DRoadArrow(arrowX1, centerY, dir === 'left' ? Math.PI : 0, neonAccent);
   draw3DRoadArrow(arrowX2, centerY, dir === 'left' ? Math.PI : 0, neonAccent);
 
