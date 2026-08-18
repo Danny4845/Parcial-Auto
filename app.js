@@ -2497,15 +2497,10 @@ const AI_TOOLS = {
       if (!puedeDo('simE1') || cooldownE1Restante > 0) {
         return { exito: false, error: 'Entrada no permitida: cooldown activo o sin permisos.' };
       }
-      if (EST.plazasOcupadas >= 100) return { exito: false, error: 'Estacionamiento lleno (100/100).' };
-      
-      // Si el sistema estaba detenido, lo iniciamos automáticamente
       if (!EST.sistemaActivo) {
-        EST.sistemaActivo = true;
-        EST.semEntrada = 'azul';
-        iniciarCicloSP();
-        log('Sistema iniciado automáticamente para permitir ingreso de vehículo', 'ok');
+        return { exito: false, error: 'La simulación está detenida. Primero debes activar la simulación (iniciar sistema).' };
       }
+      if (EST.plazasOcupadas >= 100) return { exito: false, error: 'Estacionamiento lleno (100/100).' };
 
       iniciarCooldownE1(3);
       EST.vehiculos.push(crearVehiculoEntrada());
@@ -2517,14 +2512,10 @@ const AI_TOOLS = {
       if (!puedeDo('simS1') || cooldownS1Restante > 0) {
         return { exito: false, error: 'Salida no permitida: cooldown activo o sin permisos.' };
       }
-      if (EST.plazasOcupadas === 0) return { exito: false, error: 'El estacionamiento está vacío (0 vehículos).' };
-      
-      // Si el sistema estaba detenido, lo iniciamos automáticamente
       if (!EST.sistemaActivo) {
-        EST.sistemaActivo = true;
-        EST.semEntrada = 'azul';
-        iniciarCicloSP();
+        return { exito: false, error: 'La simulación está detenida. Primero debes activar la simulación (iniciar sistema).' };
       }
+      if (EST.plazasOcupadas === 0) return { exito: false, error: 'El estacionamiento está vacío (0 vehículos).' };
 
       iniciarCooldownS1(3);
       EST.vehiculos.push(crearVehiculoSalida());
