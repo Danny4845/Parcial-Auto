@@ -2474,59 +2474,56 @@ const AI_TOOLS = {
       if (!await verifyCommand(payload, firma)) return { exito: false, error: 'Firma HMAC inválida.' };
       EST.sistemaActivo = true; EST.semEntrada = 'azul'; iniciarCicloSP(); actualizarUI();
       log(`Asistente IA: Sistema iniciado por orden de ${sesion.nombre}`, 'ok');
-      return { exito: true, mensaje: 'Sistema SCADA iniciado y ciclo de semáforo SP activado.' };
+      return { exito: true, mensaje: 'Sistema SCADA iniciado exitosamente y ciclo de semáforo SP activado.' };
     }
-    if (accion === 'detener' || accion === 'pausar') {
-      if (!puedeDo('inicio') && !puedeDo('reset')) return { exito: false, error: `Rol "${rol}" no tiene permiso para detener el sistema.` };
-      EST.sistemaActivo = false;
-      clearTimeout(EST.spTimer);
-      clearTimeout(EST.transTimer);
-      EST.semEntrada = 'rojo';
-      EST.semSalida = 'rojo';
-      EST.semPeatonal = 'rojo';
-      EST.paActivo = false;
-      actualizarUI();
-      log(`Asistente IA: Sistema detenido por ${sesion.nombre}`, 'warn');
-      return { exito: true, mensaje: 'Sistema SCADA detenido y semáforos en modo de seguridad (rojo).' };
-    }
-    if (accion === 'reiniciar') {
-      if (!puedeDo('reset')) return { exito: false, error: `Rol "${rol}" no tiene permiso para reiniciar.` };
+    if (accion === 'detener' || accion === 'pausar' || accion === 'reiniciar') {
+      if (!puedeDo('reset')) return { exito: false, error: `Rol "${rol}" no tiene permiso para reiniciar o detener el sistema.` };
       const { payload, firma } = await signCommand('RESET');
       if (!await verifyCommand(payload, firma)) return { exito: false, error: 'Firma HMAC inválida.' };
       resetSistema();
-      log(`Asistente IA: Sistema reiniciado a CI por ${sesion.nombre}`, 'warn');
-      return { exito: true, mensaje: 'Sistema restablecido a Condiciones Iniciales (CI).' };
+      log(`Asistente IA: Simulación reiniciada a Condiciones Iniciales (CI) por ${sesion.nombre}`, 'warn');
+      return { exito: true, mensaje: 'Simulación reiniciada a Condiciones Iniciales: sistema detenido, portón cerrado y 100 plazas disponibles.' };
     }
     if (accion === 'simular_entrada') {
       if (!puedeDo('simE1') || cooldownE1Restante > 0) {
         return { exito: false, error: 'Entrada no permitida: cooldown activo o sin permisos.' };
       }
-      if (!EST.sistemaActivo) {
-        return { exito: false, error: 'La simulación está detenida. Primero debes activar la simulación (iniciar sistema).' };
-      }
       if (EST.plazasOcupadas >= 100) return { exito: false, error: 'Estacionamiento lleno (100/100).' };
+
+      // Si el sistema no estaba activo, se inicia automáticamente para una operación fluida
+      if (!EST.sistemaActivo) {
+        EST.sistemaActivo = true;
+        EST.semEntrada = 'azul';
+        iniciarCicloSP();
+        log('Sistema iniciado automáticamente al solicitar entrada de vehículo', 'ok');
+      }
 
       iniciarCooldownE1(3);
       EST.vehiculos.push(crearVehiculoEntrada());
       actualizarUI();
       log(`Asistente IA: Vehículo ingresado por ${sesion.nombre} (E1)`, 'info');
-      return { exito: true, mensaje: 'Vehículo aproximándose por el sensor E1. Cooldown de 3s activado.' };
+      return { exito: true, mensaje: 'Simulación iniciada y vehículo aproximándose por el sensor de entrada (E1).' };
     }
     if (accion === 'simular_salida') {
       if (!puedeDo('simS1') || cooldownS1Restante > 0) {
         return { exito: false, error: 'Salida no permitida: cooldown activo o sin permisos.' };
       }
+      if (EST.plazasOcupadas === 0) return { exito: false, error: 'El estacionamiento está vacío (0 vehículos ocupando plazas).' };
+
+      // Si el sistema no estaba activo, se inicia automáticamente para una operación fluida
       if (!EST.sistemaActivo) {
-        return { exito: false, error: 'La simulación está detenida. Primero debes activar la simulación (iniciar sistema).' };
+        EST.sistemaActivo = true;
+        EST.semEntrada = 'azul';
+        iniciarCicloSP();
+        log('Sistema iniciado automáticamente al solicitar salida de vehículo', 'ok');
       }
-      if (EST.plazasOcupadas === 0) return { exito: false, error: 'El estacionamiento está vacío (0 vehículos).' };
 
       iniciarCooldownS1(3);
       EST.vehiculos.push(crearVehiculoSalida());
       activarSensor('S1');
       actualizarUI();
       log(`Asistente IA: Vehículo en salida por ${sesion.nombre} (S1)`, 'info');
-      return { exito: true, mensaje: 'Vehículo demandando salida (S1). Prioridad de salida concedida.' };
+      return { exito: true, mensaje: 'Simulación iniciada y vehículo demandando salida por el sensor S1.' };
     }
     if (accion === 'forzar_porton') {
       if (!puedeDo('forzarPorton')) return { exito: false, error: `Acceso denegado: Tu rol de ${rol} no tiene privilegios para forzar el portón manual (Requiere Supervisor o Gerente).` };
