@@ -525,11 +525,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: grab;
   user-select: none;
-}
-.ai-chat-header:active {
-  cursor: grabbing;
 }
 .ai-header-info { display: flex; align-items: center; gap: 9px; }
 .ai-bot-avatar {
