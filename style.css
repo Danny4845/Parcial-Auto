@@ -432,21 +432,37 @@ html, body {
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Widget Chatbot Flotante IA (Gemini / n8n) */
-.ai-fab {
-  /* Reposicionado al espacio vacío del panel lateral izquierdo */
-  position: fixed;
-  left: 87px;          /* centrado en el panel de 250px: (250 - 76) / 2 */
-  bottom: 116px;       /* por encima de los 100px del panel inferior */
-  z-index: 1500;
-  width: 76px; height: 76px; border-radius: 50%;
-  background: linear-gradient(135deg, #00f0ff, #00f59b);
-  box-shadow: 0 8px 25px rgba(0, 240, 255, 0.45), 0 0 15px rgba(0, 245, 155, 0.35);
-  border: 2px solid rgba(255, 255, 255, 0.4); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  overflow: hidden;
+.ai-fab-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  width: 100%;
+  padding: 8px 0;
 }
-.ai-fab:hover { transform: scale(1.1) rotate(6deg); box-shadow: 0 12px 32px rgba(0, 240, 255, 0.7); }
+
+.ai-fab {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f0ff, #00f59b);
+  box-shadow: 0 10px 30px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 245, 155, 0.4);
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow .25s ease;
+  overflow: hidden;
+  margin: auto;
+  flex-shrink: 0;
+}
+.ai-fab:hover {
+  transform: scale(1.08) rotate(4deg);
+  box-shadow: 0 14px 38px rgba(0, 240, 255, 0.75), 0 0 28px rgba(0, 245, 155, 0.55);
+}
 .ai-fab-icon {
   width: 100%;
   height: 100%;
@@ -473,18 +489,29 @@ html, body {
 }
 
 .ai-chat-drawer {
-  /* Abre a la derecha del panel lateral */
   position: fixed;
-  bottom: 116px;
-  left: 262px;         /* justo al borde derecho del panel lateral (250px + gap) */
-  right: auto;
-  width: 380px; height: 530px;
-  max-height: calc(100vh - 130px); max-width: calc(100vw - 270px);
-  z-index: 1500; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(18px);
-  border: 1px solid var(--border-bright); border-radius: var(--radius-lg);
+  top: 90px;
+  left: 265px;
+  width: 380px;
+  height: 530px;
+  max-height: calc(100vh - 120px);
+  max-width: calc(100vw - 280px);
+  z-index: 1500;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-lg);
   box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(0, 240, 255, 0.25);
-  display: flex; flex-direction: column; overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   animation: slideUp .22s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: none;
+}
+.ai-chat-drawer.is-dragging {
+  animation: none;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.85), 0 0 45px rgba(0, 240, 255, 0.45);
+  user-select: none;
 }
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(16px) scale(0.96); }
@@ -492,9 +519,17 @@ html, body {
 }
 
 .ai-chat-header {
-  padding: 10px 14px; background: rgba(11, 19, 41, 0.95);
+  padding: 10px 14px;
+  background: rgba(11, 19, 41, 0.95);
   border-bottom: 1px solid var(--border-dim);
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  user-select: none;
+}
+.ai-chat-header:active {
+  cursor: grabbing;
 }
 .ai-header-info { display: flex; align-items: center; gap: 9px; }
 .ai-bot-avatar {

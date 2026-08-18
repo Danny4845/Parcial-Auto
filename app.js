@@ -2206,6 +2206,79 @@ if (n8nWebhookUrl.includes('webhook-test')) {
   localStorage.setItem('scada_n8n_webhook', n8nWebhookUrl);
 }
 
+function makeDraggable(el) {
+  if (!el) return;
+  let isDragging = false;
+  let startX = 0, startY = 0;
+  let initialLeft = 0, initialTop = 0;
+
+  function onPointerDown(e) {
+    // Ignorar si se hace clic en botones, inputs, enlaces, chips o burbujas de texto
+    if (e.target.closest('button, input, textarea, select, a, .ai-chip, .ai-msg-bubble')) return;
+    
+    // Solo clic primario (izquierdo) o touch
+    if (e.type === 'mousedown' && e.button !== 0) return;
+
+    isDragging = true;
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+    const rect = el.getBoundingClientRect();
+    startX = clientX;
+    startY = clientY;
+    initialLeft = rect.left;
+    initialTop = rect.top;
+
+    // Fijar posición calculada actual para transición limpia
+    el.style.left = initialLeft + 'px';
+    el.style.top = initialTop + 'px';
+    el.style.bottom = 'auto';
+    el.style.right = 'auto';
+    el.style.margin = '0';
+    el.classList.add('is-dragging');
+
+    window.addEventListener('mousemove', onPointerMove, { passive: false });
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('mouseup', onPointerUp);
+    window.addEventListener('touchend', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!isDragging) return;
+    if (e.cancelable) e.preventDefault();
+
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+
+    const rect = el.getBoundingClientRect();
+    const maxLeft = Math.max(10, window.innerWidth - rect.width - 10);
+    const maxTop = Math.max(10, window.innerHeight - rect.height - 10);
+
+    const newLeft = Math.max(10, Math.min(maxLeft, initialLeft + dx));
+    const newTop = Math.max(10, Math.min(maxTop, initialTop + dy));
+
+    el.style.left = newLeft + 'px';
+    el.style.top = newTop + 'px';
+  }
+
+  function onPointerUp() {
+    if (!isDragging) return;
+    isDragging = false;
+    el.classList.remove('is-dragging');
+
+    window.removeEventListener('mousemove', onPointerMove);
+    window.removeEventListener('touchmove', onPointerMove);
+    window.removeEventListener('mouseup', onPointerUp);
+    window.removeEventListener('touchend', onPointerUp);
+  }
+
+  el.addEventListener('mousedown', onPointerDown);
+  el.addEventListener('touchstart', onPointerDown, { passive: true });
+}
+
 function initAiAgent() {
   const fab = document.getElementById('btnAiFab');
   const drawer = document.getElementById('aiChatDrawer');
@@ -2217,6 +2290,9 @@ function initAiAgent() {
   const chatForm = document.getElementById('aiChatForm');
   const chatInput = document.getElementById('aiChatInput');
   const userRoleEl = document.getElementById('aiUserRole');
+
+  // Permitir arrastrar la ventana de chat a cualquier lugar de la pantalla
+  if (drawer) makeDraggable(drawer);
 
   // Toggle de apertura y cierre
   fab?.addEventListener('click', () => {
