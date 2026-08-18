@@ -1348,15 +1348,17 @@ function crearVehiculoSalida() {
   const salY = topHudH + simH * 0.68;
   const colors = ['#ffb700', '#ff0055', '#00f0ff', '#a855f7', '#00ff66', '#ff7700'];
   const col = colors[_carIdx++ % colors.length];
+  // Generar fuera de pantalla por la izquierda (dentro del garaje),
+  // igual que entrada genera fuera de pantalla por la derecha.
   return {
     id: crypto.randomUUID(),
     tipo: 'salida',
-    x: W * 0.20,
+    x: W * 0.02,          // Fuera de pantalla a la izquierda (espejo del W*0.98 de entrada)
     y: salY,
     color: col,
-    fase: 'esperandoVerde',
+    fase: 'llegando',     // Fase nueva: se mueve al stop antes de esperar verde
     speed: Math.max(110, W * 0.14),
-    s1Triggered: true,
+    s1Triggered: false,
     s2Triggered: false,
     counted: false
   };
@@ -1431,12 +1433,25 @@ function updateVehiculos(dt) {
     let targetStopX = stopSalidaX;
     if (i > 0) {
       const frontCar = salidas[i - 1];
-      if (frontCar.fase === 'esperandoVerde' || (frontCar.fase === 'saliendo' && frontCar.x < gW + 40)) {
+      if (frontCar.fase === 'esperandoVerde' || frontCar.fase === 'llegando' ||
+          (frontCar.fase === 'saliendo' && frontCar.x < gW + 40)) {
         targetStopX = Math.min(stopSalidaX, frontCar.x - safeGap);
       }
     }
 
-    if (v.fase === 'esperandoVerde') {
+    if (v.fase === 'llegando') {
+      // Igual que entrada pero hacia la derecha: avanza desde el garaje al stop
+      v.x += v.speed * dt;
+      const s1X = gW * 0.76; // Posición del sensor S1 (espejo de E1)
+      if (v.x >= s1X && !v.s1Triggered) {
+        v.s1Triggered = true;
+        activarSensor('S1');
+      }
+      if (v.x >= targetStopX) {
+        v.x = targetStopX;
+        v.fase = 'esperandoVerde';
+      }
+    } else if (v.fase === 'esperandoVerde') {
       if (v.x < targetStopX) {
         v.x += v.speed * dt;
         if (v.x >= targetStopX) v.x = targetStopX;
