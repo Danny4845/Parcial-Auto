@@ -2208,13 +2208,16 @@ if (n8nWebhookUrl.includes('webhook-test')) {
 
 function makeDraggable(el) {
   if (!el) return;
+  const header = el.querySelector('.ai-chat-header');
+  if (!header) return;
+
   let isDragging = false;
   let startX = 0, startY = 0;
   let initialLeft = 0, initialTop = 0;
 
   function onPointerDown(e) {
-    // Ignorar si se hace clic en botones, inputs, enlaces, chips o burbujas de texto
-    if (e.target.closest('button, input, textarea, select, a, .ai-chip, .ai-msg-bubble')) return;
+    // Ignorar si se hace clic en botones dentro del header (cerrar, config)
+    if (e.target.closest('button, input, a')) return;
     
     // Solo clic primario (izquierdo) o touch
     if (e.type === 'mousedown' && e.button !== 0) return;
@@ -2275,8 +2278,9 @@ function makeDraggable(el) {
     window.removeEventListener('touchend', onPointerUp);
   }
 
-  el.addEventListener('mousedown', onPointerDown);
-  el.addEventListener('touchstart', onPointerDown, { passive: true });
+  // El arrastre se realiza exclusivamente desde la cabecera para no interferir con la barra de scroll del chat
+  header.addEventListener('mousedown', onPointerDown);
+  header.addEventListener('touchstart', onPointerDown, { passive: true });
 }
 
 function initAiAgent() {
@@ -2638,19 +2642,19 @@ async function processAiPrompt(prompt) {
               const esSoloConsulta = p.includes('cual es') || p.includes('quien soy') || p.includes('cuantas') || p.includes('que rol') || p.includes('dime mi') || p.includes('resumen') || p.includes('historial');
               
               if (!esSoloConsulta) {
-                if (p.includes('paus') || p.includes('deten') || p.includes('parar') || p.includes('para ') || p.includes('paralo') || p.includes('fren') || p.includes('apaga') || p.includes('detener')) {
+                if (/\b(paus|deten|parar|para|paralo|fren|apaga|detener)\w*/i.test(p)) {
                   cmd = 'detener';
-                } else if (p.includes('reinici') || p.includes('reset') || p.includes('restablec') || p.includes('ci')) {
-                  cmd = 'reiniciar';
-                } else if (p.includes('sal') || p.includes('s1')) {
-                  cmd = 'simular_salida';
-                } else if (p.includes('entr') || p.includes('ingres') || p.includes('auto') || p.includes('carro') || p.includes('coche') || p.includes('vehiculo') || p.includes('e1') || p.includes('lleg')) {
-                  cmd = 'simular_entrada';
-                } else if (p.includes('porton') || p.includes('puerta') || p.includes('reja') || p.includes('abrir') || p.includes('abre') || p.includes('cerrar') || p.includes('cierra') || p.includes('forzar')) {
-                  cmd = 'forzar_porton';
-                } else if (p.includes('inici') || p.includes('arranc') || p.includes('empiez') || p.includes('empez') || p.includes('comienz') || p.includes('comenz') || p.includes('activ') || p.includes('simulacion') || p.includes('simulación') || p.includes('prende') || p.includes('prender')) {
+                } else if (/\b(inici|arranc|empiez|empez|comienz|comenz|activ|prende|prender)\w*/i.test(p) || p.includes('iniciar') || p.includes('inicia') || p.includes('activar') || p.includes('simulacion') || p.includes('simulación')) {
                   cmd = 'iniciar';
-                } else if (p.includes('tiempo') || p.includes('verde') || p.includes('rojo') || p.includes('segundo') || p.includes('temporizador') || p.includes('ajust')) {
+                } else if (/\b(reinici|reset|restablec)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales')) {
+                  cmd = 'reiniciar';
+                } else if (/\b(salid|sacar|egres)\w*/i.test(p) || /\bsal\b/i.test(p) || p.includes('s1')) {
+                  cmd = 'simular_salida';
+                } else if (/\b(entr|ingres|auto|carro|coche|vehiculo|lleg)\w*/i.test(p) || p.includes('e1')) {
+                  cmd = 'simular_entrada';
+                } else if (/\b(porton|puerta|reja|abrir|abre|cerrar|cierra|forzar)\w*/i.test(p)) {
+                  cmd = 'forzar_porton';
+                } else if (/\b(tiempo|verde|rojo|segundo|temporizador|ajust)\w*/i.test(p)) {
                   cmd = 'ajustar_tiempos_sp';
                 }
               }
