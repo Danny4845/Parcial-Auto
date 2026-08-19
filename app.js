@@ -1830,7 +1830,6 @@ function mostrarApp() {
 function cerrarSesion() {
   log('Sesión cerrada', 'warn');
   sesion = null;
-  resetSistema();
 
   // Limpieza estricta de credenciales y campos de entrada en el DOM
   const inputUsr = document.getElementById('inputUsuario');
