@@ -238,8 +238,8 @@ async function verificarIntegridadLogs() {
 // Permisos y Matriz RBAC
 const PERMISOS = {
   Operador:   ['inicio', 'reset', 'simE1', 'simS1'],
-  Supervisor: ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'crearUsuario'],
-  Ingeniero:  ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'crearUsuario'],
+  Supervisor: ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verMetricas', 'crearUsuario'],
+  Ingeniero:  ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verMetricas', 'crearUsuario'],
   Gerente:    ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'verMetricas', 'crearUsuario']
 };
 function puedeDo(accion) { return sesion && (PERMISOS[sesion.rol] || []).includes(accion); }
@@ -1760,7 +1760,7 @@ function aplicarRBAC() {
   const esOperador   = (rol === 'Operador');
 
   const pi = document.getElementById('panelIngeniero'); if (pi) pi.hidden = !esSupervisor && !esGerente;
-  const pg = document.getElementById('panelGerente');   if (pg) pg.hidden = !esGerente;
+  const pg = document.getElementById('panelGerente');   if (pg) pg.hidden = !esSupervisor && !esGerente; // Supervisor y Gerente pueden ver métricas
   const pl = document.getElementById('panelLog');       if (pl) pl.hidden = !esGerente; // Exclusivo del Gerente
 
   const btnCrear = document.getElementById('btnOpenCrearUsuario');
@@ -2419,6 +2419,7 @@ function renderAiQuickChips(rol) {
   } else if (rol === 'Supervisor' || rol === 'Ingeniero') {
     chips = [
       { label: '📊 Plazas', prompt: '¿Cuántas plazas hay disponibles y cuál es el estado del estacionamiento?' },
+      { label: '📈 Métricas ERP', prompt: 'Muestra el resumen ejecutivo de métricas, entradas, salidas y consumo de energía' },
       { label: '🚪 Abrir/Cerrar Portón', prompt: 'Forzar maniobra manual del portón de acceso' },
       { label: '🚗 Entrada (E1)', prompt: 'Simula la llegada de un vehículo por la entrada E1' },
       { label: '🚙 Salida (S1)', prompt: 'Simula la salida de un vehículo por el sensor S1' },
