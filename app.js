@@ -3049,11 +3049,18 @@ async function ejecutarMotorAgenteLocal(prompt) {
     return;
   }
 
-  // 5. Auditoría e Integridad
+  // 5. Consulta de Usuarios (Exclusivo Gerente)
+  if (p.includes('usuario') || p.includes('cuenta') || p.includes('quienes tienen acceso') || p.includes('lista de usuarios')) {
+    const res = await AI_TOOLS.ejecutar_comando('consultar_usuarios');
+    appendAiMessage('bot', res.mensaje || res.error, 'Tool: consultar_usuarios', !res.exito);
+    return;
+  }
+
+  // 6. Auditoría e Integridad
   if (p.includes('auditoria') || p.includes('integridad') || p.includes('hash') || p.includes('log') || p.includes('seguridad')) {
     const ok = await AI_TOOLS.ejecutar_comando('verificar_integridad');
     const logs = AI_TOOLS.consultar_auditoria(3);
-    let logTxt = logs.map(l => `• [${l.hora}] ${l.usuario} (${l.rol}): ${l.mensaje}`).join('\n');
+    let logTxt = Array.isArray(logs) ? logs.map(l => `• [${l.hora}] ${l.usuario} (${l.rol}): ${l.mensaje}`).join('\n') : logs.error;
     appendAiMessage('bot', `🛡️ **Auditoría Criptográfica SHA-256:**\n${ok.mensaje}\n\n**Últimos registros:**\n${logTxt}`, 'Tool: verificar_integridad');
     return;
   }
