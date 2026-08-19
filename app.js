@@ -2782,16 +2782,22 @@ async function processAiPrompt(prompt) {
       let lastError = null;
       for (const targetUrl of urlsToTry) {
         try {
-          const res = await fetch(targetUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              prompt,
-              usuario: sesion.nombre,
-              rol: sesion.rol,
-              scadaState: AI_TOOLS.consultar_estado()
-            })
-          });
+            const scadaStateData = {
+              ...AI_TOOLS.consultar_estado(),
+              metricas: (sesion?.rol === 'Supervisor' || sesion?.rol === 'Gerente') ? AI_TOOLS.consultar_metricas() : null,
+              usuariosRegistrados: sesion?.rol === 'Gerente' ? AI_TOOLS.consultar_usuarios() : []
+            };
+
+            const res = await fetch(targetUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                prompt,
+                usuario: sesion.nombre,
+                rol: sesion.rol,
+                scadaState: scadaStateData
+              })
+            });
 
           if (res.ok) {
             const rawText = await res.text();
@@ -2886,7 +2892,9 @@ async function processAiPrompt(prompt) {
         }
       }
 
-      appendAiMessage('bot', `⚠️ **No se pudo comunicar con n8n (${lastError}).**\n\n**Solución rápida en n8n:**\n1. Asegúrate de activar el flujo arriba a la derecha (cambiar **Inactive** a **Active**).\n2. O si estás probándolo en el editor, presiona **Listen for test event** y envía el mensaje de nuevo.`, 'n8n Webhook', true);
+      // Fallback suave al motor local si n8n no responde o falla
+      console.warn('n8n no disponible, ejecutando motor local:', lastError);
+      await ejecutarMotorAgenteLocal(prompt);
       if (sendBtn) sendBtn.disabled = false;
       return;
     }
