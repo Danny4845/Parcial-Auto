@@ -2740,7 +2740,7 @@ async function processAiPrompt(prompt) {
 
   // Detección de confirmación de acción pendiente (ej: iniciar sistema, entrar/salir vehículo)
   const pLower = prompt.trim().toLowerCase();
-  const isConfirm = /^(si|sí|claro|ok|dale|procede|proceder|afirmativo|positivo|por favor|adelante|hazlo|confirmo|confirmar|ingresalo|ingrésalo|sacalo|sácalo|entra|saca)$/i.test(pLower) || /\b(si|sí|confirmo|confirmar|procede|proceder|ingresalo|ingrésalo|sacalo|sácalo|entra|dale|adelante|hazlo|claro|por favor|ok|afirmativo|positivo)\b/i.test(pLower);
+  const isConfirm = /^(si|sí|claro|ok|dale|procede|proceder|afirmativo|positivo|por favor|adelante|hazlo|confirmo|confirmar|ingresalo|ingrésalo|sacalo|sácalo|entra|saca|carro|carrro|auto|vehiculo|vehículo|coche)$/i.test(pLower) || /\b(si|sí|confirmo|confirmar|procede|proceder|ingresalo|ingrésalo|sacalo|sácalo|entra|dale|adelante|hazlo|claro|por favor|ok|afirmativo|positivo|carro|carrro|auto|vehiculo|vehículo|coche)\b/i.test(pLower);
   const isDeny = /^(no|nop|cancelar|cancela|deten|para|espera)$/i.test(pLower) || /\b(no|cancela|cancelar|deten|parar|espera|todavia no|todavía no)\b/i.test(pLower);
 
   if (isConfirm) {
@@ -2854,28 +2854,32 @@ async function processAiPrompt(prompt) {
               const esSoloConsulta = p.includes('cual es') || p.includes('quien soy') || p.includes('cuantas') || p.includes('que rol') || p.includes('dime mi') || p.includes('resumen') || p.includes('historial');
               
               if (!esSoloConsulta) {
-                // Consulta de Métricas (Supervisor / Gerente)
-                if (/\b(metrica|metricas|consumo|energia|kwh|estadistic|reporte de metricas|resumen ejecutivo)\w*/i.test(p) || p.includes('metricas') || p.includes('entradas y salidas') || p.includes('cuantos vehiculos han entrado') || p.includes('cuantos carros han entrado')) {
-                  cmd = 'consultar_metricas';
-                // 1. Consulta de Usuarios (Exclusivo Gerente)
-                } else if (/\b(usuarios|cuentas|quienes tienen acceso|lista de usuario|mostrar usuario)\w*/i.test(p) || p.includes('listar usuarios') || p.includes('ver usuarios') || p.includes('lista de usuarios') || p.includes('usuarios registrados')) {
-                  cmd = 'consultar_usuarios';
-                // 2. Verificación de Integridad / Auditoría SHA-256
-                } else if (/\b(integrid|auditor|auditar|sha256|cadena criptogr)\w*/i.test(p) || p.includes('verificar integridad') || p.includes('reporte de integridad') || p.includes('auditoria')) {
-                  cmd = 'verificar_integridad';
-                // 2. Reiniciar / Detener / Pausar / CI (evaluado primero para que 'reinicia' no coincida con 'inicia')
-                } else if (/\b(reinici|reset|restablec|deten|paus|parar|paralo|fren|apaga)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p)) {
-                  cmd = 'reiniciar';
-                // 3. Iniciar / Arrancar / Activar
-                } else if (/\b(inici|arranc|empiez|empez|comienz|comenz|activ|prende|prender)\w*/i.test(p) || /\b(iniciar|inicia|arrancar|activar)\b/i.test(p) || p.includes('simulacion') || p.includes('simulación')) {
-                  cmd = 'iniciar';
-                } else if (/\b(salid|sacar|egres)\w*/i.test(p) || /\bsal\b/i.test(p) || p.includes('s1')) {
+                // 1. Salida de Vehículo (S1 / Expulsar / Egresar / Retirar / Despachar / Sacar)
+                if (/\b(salid|sacar|saca|sacalo|sácalo|egres|egreso|expuls|expulsa|expulsar|retir|retira|retirar|despach|despacha|despachar|desaloj|desaloja|desalojar)\w*/i.test(p) || /\bsal\b/i.test(p) || p.includes('s1') || p.includes('fuera') || p.includes('que salga') || p.includes('sacar carro') || p.includes('sacar auto') || p.includes('sacar vehiculo') || p.includes('expulsa un carro') || p.includes('expulsar carro')) {
                   cmd = 'simular_salida';
-                } else if (/\b(entr|ingres|auto|carro|coche|vehiculo|lleg)\w*/i.test(p) || p.includes('e1')) {
+                // 2. Entrada de Vehículo (E1 / Ingresar / Meter / Llegada / Arribo / Carro / Auto / Coche)
+                } else if (/\b(entr|entra|entrar|ingres|ingresa|ingresar|ingreso|lleg|llegar|llegada|arrib|arribo|mete|meter|metelo|mételo|insert|inserta|insertar|ingresalo|ingrésalo)\w*/i.test(p) || /\b(auto|carro|carrro|coche|vehiculo|vehículo)\b/i.test(p) || p.includes('e1') || p.includes('que entre') || p.includes('meter carro') || p.includes('meter auto') || p.includes('ingresar vehiculo') || p.includes('dar paso') || p.includes('un carro') || p.includes('un auto') || p.includes('un vehiculo')) {
                   cmd = 'simular_entrada';
-                } else if (/\b(porton|puerta|reja|abrir|abre|cerrar|cierra|forzar)\w*/i.test(p)) {
+                // 3. Consulta de Métricas (Supervisor / Gerente)
+                } else if (/\b(metrica|metricas|métrica|métricas|consumo|energia|energía|kwh|estadistic|estadística|estadísticas|balance|resumen ejecutivo)\w*/i.test(p) || p.includes('metricas') || p.includes('entradas y salidas') || p.includes('cuantos vehiculos') || p.includes('cuantos carros') || p.includes('total de autos') || p.includes('total de vehiculos')) {
+                  cmd = 'consultar_metricas';
+                // 4. Consulta de Usuarios (Exclusivo Gerente)
+                } else if (/\b(usuario|usuarios|cuenta|cuentas|operador|operadores|supervisor|supervisores|gerente|gerentes|lista de usuario|mostrar usuario)\w*/i.test(p) || p.includes('quienes tienen acceso') || p.includes('quien tiene acceso') || p.includes('listar usuarios') || p.includes('ver usuarios') || p.includes('lista de usuarios') || p.includes('usuarios registrados')) {
+                  cmd = 'consultar_usuarios';
+                // 5. Verificación de Integridad / Auditoría SHA-256 (Exclusivo Gerente)
+                } else if (/\b(integrid|integridad|auditor|auditoría|auditoria|auditar|sha256|sha-256|cadena criptogr|ciberseguridad|verificacion|seguridad)\w*/i.test(p) || p.includes('verificar integridad') || p.includes('reporte de integridad') || p.includes('auditoria') || p.includes('revisar registros') || p.includes('validar log') || p.includes('validar registros')) {
+                  cmd = 'verificar_integridad';
+                // 6. Reiniciar / Detener / Pausar / CI (evaluado antes que 'inicia')
+                } else if (/\b(reinici|reinicia|reiniciar|reset|resetear|restablec|restablecer|reestablec|deten|detener|detenlo|paus|pausa|pausar|parar|para|paralo|fren|frena|frenar|apaga|apagar|cancel|limpi)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p) || p.includes('para todo') || p.includes('detener todo') || p.includes('apagar todo')) {
+                  cmd = 'reiniciar';
+                // 7. Iniciar / Arrancar / Activar / Prender / Encender
+                } else if (/\b(inici|inicia|iniciar|arranc|arranca|arrancar|empiez|empez|comienz|comenz|activ|activa|activar|prende|prender|encend|enciende|encender|oper)\w*/i.test(p) || /\b(iniciar|inicia|arrancar|activar|encender|prender)\b/i.test(p) || p.includes('simulacion') || p.includes('simulación') || p.includes('prende el sistema') || p.includes('iniciar sistema')) {
+                  cmd = 'iniciar';
+                // 8. Forzar Portón Manual (Supervisor / Gerente)
+                } else if (/\b(porton|portón|puerta|reja|barrera|abrir|abre|cerrar|cierra|forzar|subir|sube|bajar|baja)\w*/i.test(p)) {
                   cmd = 'forzar_porton';
-                } else if (/\b(tiempo|verde|rojo|segundo|temporizador|ajust)\w*/i.test(p)) {
+                // 9. Ajustar Tiempos Semáforo SP (Supervisor / Gerente)
+                } else if (/\b(tiempo|tiempos|segundo|segundos|temporizador|verde|rojo|ajust|modific)\w*/i.test(p)) {
                   cmd = 'ajustar_tiempos_sp';
                 }
               }
@@ -3057,7 +3061,7 @@ GUARDRAILS Y LÍMITES ESTRICTOS:
   }
 }
 
-// Motor de Reglas y Comprensión Semántica Local con Guardrails
+// Motor de Reglas y Comprensión Semántica Local con Guardrails Expandido
 async function ejecutarMotorAgenteLocal(prompt) {
   const p = prompt.toLowerCase().trim();
   const rol = sesion?.rol;
@@ -3069,78 +3073,79 @@ async function ejecutarMotorAgenteLocal(prompt) {
     return;
   }
 
-  // 2. Consulta de Plazas y Ocupación
-  if (p.includes('plaza') || p.includes('cuanto') || p.includes('espacio') || p.includes('disponible') || p.includes('capacidad')) {
-    const est = AI_TOOLS.consultar_estado();
-    appendAiMessage('bot', `📊 **Estado de Ocupación:**\n• Plazas Disponibles: **${est.plazasLibres} de 100**\n• Plazas Ocupadas: **${est.plazasOcupadas} (${est.plazasOcupadas}%)**\n• Prioridad actual: **SALIDA (S1)**\n• Sistema: **${est.sistemaActivo ? 'ACTIVO' : 'DETENIDO'}**`, 'Tool: consultar_estado');
+  // 2. Simular Salida de Vehículo (S1 / Expulsar / Egresar / Retirar / Despachar / Sacar)
+  if (/\b(salid|sacar|saca|sacalo|sácalo|egres|egreso|expuls|expulsa|expulsar|retir|retira|retirar|despach|despacha|despachar|desaloj|desaloja|desalojar)\w*/i.test(p) || /\bsal\b/i.test(p) || p.includes('s1') || p.includes('fuera') || p.includes('que salga') || p.includes('sacar carro') || p.includes('sacar auto') || p.includes('sacar vehiculo') || p.includes('expulsa un carro') || p.includes('expulsar carro')) {
+    const res = await AI_TOOLS.ejecutar_comando('simular_salida', prompt);
+    if (res.requiereConfirmacion) {
+      appendAiMessage('bot', res.mensaje, 'Asistente SCADA: Confirmación');
+    } else {
+      appendAiMessage('bot', res.exito ? `🚙 **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: simular_salida', !res.exito);
+    }
     return;
   }
 
-  // 3. Consulta de Portón y Semáforos
-  if (p.includes('porton') || p.includes('semaforo') || p.includes('luz') || p.includes('sp') || p.includes('se') || p.includes('ss')) {
-    const est = AI_TOOLS.consultar_estado();
-    appendAiMessage('bot', `🚪 **Estado de Acceso y Señalización:**\n• Portón: **${est.portonEstado.toUpperCase()}** (FCA: ${est.finalesDeCarrera.FCA_Abierto ? 'ACTIVO' : 'INACTIVO'}, FCC: ${est.finalesDeCarrera.FCC_Cerrado ? 'ACTIVO' : 'INACTIVO'})\n• Semáforo Peatonal (SP): **${est.semPeatonal.toUpperCase()}**\n• Semáforo Entrada (SE): **${est.semEntrada.toUpperCase()}**\n• Semáforo Salida (SS): **${est.semSalida.toUpperCase()}**\n• Paso Vehicular (PA): **${est.pasoVehicularHabilitado ? 'HABILITADO' : 'EN ESPERA'}**`, 'Tool: consultar_estado');
+  // 3. Simular Entrada de Vehículo (E1 / Ingresar / Meter / Llegada / Arribo / Carro / Auto / Coche)
+  if (/\b(entr|entra|entrar|ingres|ingresa|ingresar|ingreso|lleg|llegar|llegada|arrib|arribo|mete|meter|metelo|mételo|insert|inserta|insertar|ingresalo|ingrésalo)\w*/i.test(p) || /\b(auto|carro|carrro|coche|vehiculo|vehículo)\b/i.test(p) || p.includes('e1') || p.includes('que entre') || p.includes('meter carro') || p.includes('meter auto') || p.includes('ingresar vehiculo') || p.includes('dar paso') || p.includes('un carro') || p.includes('un auto') || p.includes('un vehiculo')) {
+    const res = await AI_TOOLS.ejecutar_comando('simular_entrada', prompt);
+    if (res.requiereConfirmacion) {
+      appendAiMessage('bot', res.mensaje, 'Asistente SCADA: Confirmación');
+    } else {
+      appendAiMessage('bot', res.exito ? `🚗 **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: simular_entrada', !res.exito);
+    }
     return;
   }
 
-  // 4. Métricas y ERP
-  if (p.includes('metrica') || p.includes('consumo') || p.includes('energia') || p.includes('cuantos carros') || p.includes('total')) {
-    const met = AI_TOOLS.consultar_metricas();
-    appendAiMessage('bot', `📈 **Métricas del Sistema:**\n• Entradas Totales: **${met.totalEntradas}**\n• Salidas Totales: **${met.totalSalidas}**\n• Ciclos del Portón: **${met.ciclosPorton}**\n• Consumo Estimado: **${met.consumoEnergiaAprox}**`, 'Tool: consultar_metricas');
-    return;
-  }
-
-  // 5. Consulta de Usuarios (Exclusivo Gerente)
-  if (p.includes('usuario') || p.includes('cuenta') || p.includes('quienes tienen acceso') || p.includes('lista de usuarios')) {
-    const res = await AI_TOOLS.ejecutar_comando('consultar_usuarios');
-    appendAiMessage('bot', res.mensaje || res.error, 'Tool: consultar_usuarios', !res.exito);
-    return;
-  }
-
-  // 6. Auditoría e Integridad
-  if (p.includes('auditoria') || p.includes('integridad') || p.includes('hash') || p.includes('log') || p.includes('seguridad')) {
-    const ok = await AI_TOOLS.ejecutar_comando('verificar_integridad');
-    const logs = AI_TOOLS.consultar_auditoria(3);
-    let logTxt = Array.isArray(logs) ? logs.map(l => `• [${l.hora}] ${l.usuario} (${l.rol}): ${l.mensaje}`).join('\n') : logs.error;
-    appendAiMessage('bot', `🛡️ **Auditoría Criptográfica SHA-256:**\n${ok.mensaje}\n\n**Últimos registros:**\n${logTxt}`, 'Tool: verificar_integridad');
-    return;
-  }
-
-  // 6. Acciones de Maniobra
-  if (p.includes('entra') || p.includes('ingresa') || p.includes('llegar') || p.includes('e1')) {
-    const res = await AI_TOOLS.ejecutar_comando('simular_entrada');
-    appendAiMessage('bot', res.exito ? `🚗 **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: simular_entrada', !res.exito);
-    return;
-  }
-
-  if (p.includes('sal') || p.includes('salir') || p.includes('s1')) {
-    const res = await AI_TOOLS.ejecutar_comando('simular_salida');
-    appendAiMessage('bot', res.exito ? `🚙 **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: simular_salida', !res.exito);
-    return;
-  }
-
-  // 5. Reiniciar o Detener (evaluado primero para no colisionar con 'inicia')
-  if (/\b(reinici|reset|deten|paus|parar|paralo|frena|apaga)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p)) {
+  // 4. Reiniciar / Detener / Pausar / CI
+  if (/\b(reinici|reinicia|reiniciar|reset|resetear|restablec|restablecer|reestablec|deten|detener|detenlo|paus|pausa|pausar|parar|para|paralo|fren|frena|frenar|apaga|apagar|cancel|limpi)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p) || p.includes('para todo') || p.includes('detener todo') || p.includes('apagar todo')) {
     const res = await AI_TOOLS.ejecutar_comando('reiniciar');
     appendAiMessage('bot', res.exito ? `🔄 **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: reiniciar', !res.exito);
     return;
   }
 
-  // 6. Iniciar simulación
-  if (/\b(inici|arranc|empiez|empez|comienz|comenz|activ|prende)\w*/i.test(p) || /\b(inicia|iniciar|arrancar|activar)\b/i.test(p)) {
+  // 5. Iniciar Simulación
+  if (/\b(inici|inicia|iniciar|arranc|arranca|arrancar|empiez|empez|comienz|comenz|activ|activa|activar|prende|prender|encend|enciende|encender|oper)\w*/i.test(p) || /\b(iniciar|inicia|arrancar|activar|encender|prender)\b/i.test(p) || p.includes('simulacion') || p.includes('simulación') || p.includes('prende el sistema') || p.includes('iniciar sistema')) {
     const res = await AI_TOOLS.ejecutar_comando('iniciar');
     appendAiMessage('bot', res.exito ? `▶️ **Acción Ejecutada:** ${res.mensaje}` : `⚠️ **Aviso:** ${res.error}`, 'Tool: iniciar', !res.exito);
     return;
   }
 
-  if (p.includes('fuerza') || p.includes('abre porton') || p.includes('cierra porton') || p.includes('abrir porton') || p.includes('cerrar porton')) {
+  // 6. Consulta de Métricas y Estadísticas ERP (Supervisor / Gerente)
+  if (/\b(metrica|metricas|métrica|métricas|consumo|energia|energía|kwh|estadistic|estadística|estadísticas|balance|resumen ejecutivo)\w*/i.test(p) || p.includes('metricas') || p.includes('entradas y salidas') || p.includes('cuantos vehiculos') || p.includes('cuantos carros') || p.includes('total de autos') || p.includes('total de vehiculos')) {
+    const res = await AI_TOOLS.ejecutar_comando('consultar_metricas');
+    appendAiMessage('bot', res.mensaje || res.error, 'Tool: consultar_metricas', !res.exito);
+    return;
+  }
+
+  // 7. Consulta de Usuarios Registrados (Exclusivo Gerente)
+  if (/\b(usuario|usuarios|cuenta|cuentas|operador|operadores|supervisor|supervisores|gerente|gerentes|lista de usuario|mostrar usuario)\w*/i.test(p) || p.includes('quienes tienen acceso') || p.includes('quien tiene acceso') || p.includes('listar usuarios') || p.includes('ver usuarios') || p.includes('lista de usuarios') || p.includes('usuarios registrados')) {
+    const res = await AI_TOOLS.ejecutar_comando('consultar_usuarios');
+    appendAiMessage('bot', res.mensaje || res.error, 'Tool: consultar_usuarios', !res.exito);
+    return;
+  }
+
+  // 8. Auditoría e Integridad SHA-256 (Exclusivo Gerente)
+  if (/\b(integrid|integridad|auditor|auditoría|auditoria|auditar|sha256|sha-256|cadena criptogr|ciberseguridad|verificacion|seguridad)\w*/i.test(p) || p.includes('verificar integridad') || p.includes('reporte de integridad') || p.includes('auditoria') || p.includes('revisar registros') || p.includes('validar log') || p.includes('validar registros')) {
+    const res = await AI_TOOLS.ejecutar_comando('verificar_integridad');
+    appendAiMessage('bot', res.mensaje || res.error, 'Tool: verificar_integridad', !res.exito);
+    return;
+  }
+
+  // 9. Forzar Portón Manual (Supervisor / Gerente)
+  if (p.includes('fuerza') || p.includes('porton') || p.includes('portón') || p.includes('puerta') || p.includes('reja') || p.includes('barrera') || p.includes('abrir porton') || p.includes('cerrar porton') || p.includes('abre porton') || p.includes('cierra porton')) {
     const res = await AI_TOOLS.ejecutar_comando('forzar_porton');
     appendAiMessage('bot', res.exito ? `⚙️ **Acción Ejecutada:** ${res.mensaje}` : `🚫 **Permiso Denegado:** ${res.error}`, 'Tool: forzar_porton', !res.exito);
     return;
   }
 
+  // 10. Consulta de Plazas, Semáforos y Ocupación
+  if (p.includes('plaza') || p.includes('cuanto') || p.includes('espacio') || p.includes('disponible') || p.includes('capacidad') || p.includes('semaforo') || p.includes('semáforo') || p.includes('luz') || p.includes('estado') || p.includes('como esta')) {
+    const est = AI_TOOLS.consultar_estado();
+    appendAiMessage('bot', `📊 **Estado del Estacionamiento:**\n• Plazas Disponibles: **${est.plazasLibres} de 100**\n• Plazas Ocupadas: **${est.plazasOcupadas} (${est.plazasOcupadas}%)**\n• Semáforo Peatonal (SP): **${est.semaforos.peatonal_SP}**\n• Semáforo Entrada (SE): **${est.semaforos.entrada_SE}** | Salida (SS): **${est.semaforos.salida_SS}**\n• Portón: **${est.porton.estadoActual}**\n• Sistema: **${est.sistemaActivo}**`, 'Tool: consultar_estado');
+    return;
+  }
+
   // Respuesta por defecto con orientación
-  appendAiMessage('bot', `🤖 Entendido. Como asistente de operaciones SCADA con rol **${rol}**, puedo:\n• Consultar plazas y estado de semáforos\n• Simular tráfico de vehículos (E1 / S1)\n• Controlar portón y verificar integridad SHA-256\n\n*(💡 Puedes configurar tu API Key de Gemini en el botón ⚙️ para potenciar respuestas en lenguaje natural generativo).*`);
+  appendAiMessage('bot', `🤖 Entendido. Como asistente de operaciones SCADA con rol **${rol}**, puedo:\n• Simular llegada (E1) o salida/expulsión (S1) de vehículos\n• Iniciar o reiniciar la simulación a condiciones iniciales (CI)\n• Consultar plazas disponibles, métricas y estado de semáforos\n• Controlar portón manual y verificar integridad SHA-256`);
 }
 
 // Inicialización de la Aplicación
