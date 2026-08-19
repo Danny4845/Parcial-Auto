@@ -1802,6 +1802,20 @@ function configurarModalCrearRol() {
 }
 
 function mostrarApp() {
+  // Limpieza inmediata de credenciales ingresadas en el formulario de login
+  const inputUsr = document.getElementById('inputUsuario');
+  const inputPwd = document.getElementById('inputPassword');
+  const loginErr = document.getElementById('loginError');
+  if (inputUsr) inputUsr.value = '';
+  if (inputPwd) {
+    inputPwd.value = '';
+    inputPwd.type = 'password';
+  }
+  if (loginErr) {
+    loginErr.hidden = true;
+    loginErr.textContent = '';
+  }
+
   document.getElementById('authOverlay').hidden = true;
   document.getElementById('app').hidden = false;
   const fab = document.getElementById('btnAiFab');
@@ -1813,7 +1827,37 @@ function mostrarApp() {
 }
 
 function cerrarSesion() {
-  log('Sesión cerrada', 'warn'); sesion = null; resetSistema();
+  log('Sesión cerrada', 'warn');
+  sesion = null;
+  resetSistema();
+
+  // Limpieza estricta de credenciales y campos de entrada en el DOM
+  const inputUsr = document.getElementById('inputUsuario');
+  const inputPwd = document.getElementById('inputPassword');
+  const loginErr = document.getElementById('loginError');
+  if (inputUsr) inputUsr.value = '';
+  if (inputPwd) {
+    inputPwd.value = '';
+    inputPwd.type = 'password';
+  }
+  if (loginErr) {
+    loginErr.hidden = true;
+    loginErr.textContent = '';
+  }
+
+  // Limpieza de campos del modal de creación de usuarios
+  const nuevoUsr = document.getElementById('inputNuevoUsuario');
+  const nuevoPwd = document.getElementById('inputNuevoPassword');
+  if (nuevoUsr) nuevoUsr.value = '';
+  if (nuevoPwd) nuevoPwd.value = '';
+
+  // Limpieza de estado del asistente IA
+  window._aiPendingAction = null;
+  const chatInput = document.getElementById('aiChatInput');
+  if (chatInput) chatInput.value = '';
+  const userRoleEl = document.getElementById('aiUserRole');
+  if (userRoleEl) userRoleEl.textContent = 'Rol: —';
+
   const fab = document.getElementById('btnAiFab');
   if (fab) fab.hidden = true;
   const drawer = document.getElementById('aiChatDrawer');
@@ -1829,6 +1873,20 @@ function verificarPantallaInicial() {
   const panelLogin    = document.getElementById('panelLogin');
   const fab           = document.getElementById('btnAiFab');
   const drawer        = document.getElementById('aiChatDrawer');
+
+  // Limpiar campos de login por seguridad
+  const inputUsr = document.getElementById('inputUsuario');
+  const inputPwd = document.getElementById('inputPassword');
+  const loginErr = document.getElementById('loginError');
+  if (inputUsr) inputUsr.value = '';
+  if (inputPwd) {
+    inputPwd.value = '';
+    inputPwd.type = 'password';
+  }
+  if (loginErr) {
+    loginErr.hidden = true;
+    loginErr.textContent = '';
+  }
 
   if (fab) fab.hidden = true;
   if (drawer) drawer.hidden = true;
