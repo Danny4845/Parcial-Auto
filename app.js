@@ -1622,7 +1622,8 @@ function resetSistema() {
   window._aiPendingAction = null;
 
   Object.assign(EST, {
-    sistemaActivo: false, plazasOcupadas: 0, semEntrada: 'rojo', semSalida: 'rojo', semPeatonal: 'rojo',
+    sistemaActivo: false, plazasOcupadas: 0, totalEntradas: 0, totalSalidas: 0, ciclosPorton: 0,
+    semEntrada: 'rojo', semSalida: 'rojo', semPeatonal: 'rojo',
     portonEstado: 'cerrado', E1: false, E2: false, S1: false, S2: false, FCA: false, FCC: true,
     demandaEntrada: false, demandaSalida: false, portonParaEntrada: false, portonParaSalida: false,
     paActivo: false, vehiculos: []
