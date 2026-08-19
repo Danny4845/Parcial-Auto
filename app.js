@@ -2423,7 +2423,7 @@ function renderAiQuickChips(rol) {
       { label: '🚪 Abrir/Cerrar Portón', prompt: 'Forzar maniobra manual del portón de acceso' },
       { label: '🚗 Entrada (E1)', prompt: 'Simula la llegada de un vehículo por la entrada E1' },
       { label: '🚙 Salida (S1)', prompt: 'Simula la salida de un vehículo por el sensor S1' },
-      { label: '⏱️ Ajustar Tiempos SP', prompt: 'Cambia el tiempo verde del semáforo a 30s' },
+      { label: '⏱️ Tiempos SP', prompt: 'Quiero cambiar los tiempos del semáforo SP' },
       { label: '🔄 Reiniciar CI', prompt: 'Reinicia el sistema a condiciones iniciales' },
       { label: '📜 Mis Funciones', prompt: '¿Cuáles son mis funciones y permisos como Supervisor en este SCADA?' }
     ];
@@ -2436,7 +2436,7 @@ function renderAiQuickChips(rol) {
       { label: '🚪 Control Portón', prompt: 'Abre o cierra el portón del estacionamiento' },
       { label: '🚗 Entrada (E1)', prompt: 'Simula la llegada de un vehículo por la entrada E1' },
       { label: '🚙 Salida (S1)', prompt: 'Simula la salida de un vehículo por el sensor S1' },
-      { label: '⏱️ Tiempos SP', prompt: 'Ajusta los tiempos del ciclo semafórico SP' },
+      { label: '⏱️ Tiempos SP', prompt: 'Quiero cambiar los tiempos del semáforo SP' },
       { label: '🛡️ Auditoría SHA-256', prompt: 'Verifica la cadena completa de firmas criptográficas de auditoría' },
       { label: '📜 Mis Funciones', prompt: '¿Cuáles son mis funciones y permisos totales como Gerente en este SCADA?' }
     ];
@@ -2705,6 +2705,11 @@ const AI_TOOLS = {
           tv = Math.max(5, parseInt(anyNum[1], 10)) * 1000;
           const inpV = document.getElementById('inputTiempoVerde');
           if (inpV) inpV.value = tv / 1000;
+        } else {
+          return {
+            exito: true,
+            mensaje: `⏱️ Actualmente el semáforo peatonal (SP) está configurado en:\n• **Tiempo Verde:** ${EST.spVerdeMs/1000}s\n• **Tiempo Rojo:** ${EST.spRojoMs/1000}s\n\n¿A qué tiempos deseas ajustarlo? *(Ejemplo: "Pon 25s verde y 15s rojo" o "Verde 20s")*`
+          };
         }
       }
       
