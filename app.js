@@ -2535,7 +2535,7 @@ const AI_TOOLS = {
     if (sesion?.rol !== 'Gerente') {
       return [{ error: 'Acceso denegado: La consulta de usuarios y roles es exclusiva del rol de Gerente.' }];
     }
-    return usuarios.map(u => ({
+    return (USUARIOS_BD || []).map(u => ({
       usuario: u.nombre,
       rol: u.rol,
       fechaCreacion: u.fechaCreacion || 'Inicial'
@@ -2691,12 +2691,12 @@ const AI_TOOLS = {
     }
     if (accion === 'consultar_usuarios' || accion === 'listar_usuarios') {
       if (sesion?.rol !== 'Gerente') return { exito: false, error: 'Acceso denegado: La consulta de usuarios y roles es exclusiva del rol de Gerente.' };
-      if (!usuarios || usuarios.length === 0) {
+      if (!USUARIOS_BD || USUARIOS_BD.length === 0) {
         return { exito: true, mensaje: '👥 No hay usuarios adicionales registrados en el sistema.' };
       }
-      const lista = usuarios.map(u => `• **${u.nombre}** — Rol: *${u.rol}* ${u.fechaCreacion ? `(Alta: ${u.fechaCreacion})` : ''}`).join('\n');
-      const mensaje = `👥 **USUARIOS REGISTRADOS EN EL SISTEMA SCADA (${usuarios.length})**\n\n${lista}\n\n*(🛡️ Las contraseñas se encuentran cifradas con PBKDF2 y 100.000 iteraciones).*`;
-      return { exito: true, mensaje, total: usuarios.length };
+      const lista = USUARIOS_BD.map(u => `• **${u.nombre}** — Rol: *${u.rol}* ${u.fechaCreacion ? `(Alta: ${u.fechaCreacion})` : ''}`).join('\n');
+      const mensaje = `👥 **USUARIOS REGISTRADOS EN EL SISTEMA SCADA (${USUARIOS_BD.length})**\n\n${lista}\n\n*(🛡️ Las contraseñas se encuentran cifradas con PBKDF2 y 100.000 iteraciones).*`;
+      return { exito: true, mensaje, total: USUARIOS_BD.length };
     }
     if (accion === 'verificar_integridad') {
       if (!puedeDo('verLog')) return { exito: false, error: 'Acceso denegado: La verificación criptográfica de auditoría es exclusiva del Gerente.' };
