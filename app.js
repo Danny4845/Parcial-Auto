@@ -238,8 +238,8 @@ async function verificarIntegridadLogs() {
 // Permisos y Matriz RBAC
 const PERMISOS = {
   Operador:   ['inicio', 'reset', 'simE1', 'simS1'],
-  Supervisor: ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'crearUsuario'],
-  Ingeniero:  ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'crearUsuario'],
+  Supervisor: ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'crearUsuario'],
+  Ingeniero:  ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'crearUsuario'],
   Gerente:    ['inicio', 'reset', 'simE1', 'simS1', 'forzarPorton', 'ajustarTiempos', 'verLog', 'verMetricas', 'crearUsuario']
 };
 function puedeDo(accion) { return sesion && (PERMISOS[sesion.rol] || []).includes(accion); }
@@ -1761,7 +1761,7 @@ function aplicarRBAC() {
 
   const pi = document.getElementById('panelIngeniero'); if (pi) pi.hidden = !esSupervisor && !esGerente;
   const pg = document.getElementById('panelGerente');   if (pg) pg.hidden = !esGerente;
-  const pl = document.getElementById('panelLog');       if (pl) pl.hidden = esOperador;
+  const pl = document.getElementById('panelLog');       if (pl) pl.hidden = !esGerente; // Exclusivo del Gerente
 
   const btnCrear = document.getElementById('btnOpenCrearUsuario');
   if (btnCrear) {
@@ -2188,12 +2188,14 @@ function bindEvents() {
     snack(`SP actualizado: Verde ${tv/1000}s / Rojo ${tr/1000}s`); log(`Tiempos SP ajustados (Verde:${tv/1000}s Rojo:${tr/1000}s)`, 'warn');
   });
 
-  // Verificación de Integridad Criptográfica del Log
+  // Verificación de Integridad Criptográfica del Log (Exclusivo Gerente)
   document.getElementById('btnVerifyLog')?.addEventListener('click', async () => {
+    if (!puedeDo('verLog')) { snack('Acceso denegado: Exclusivo del Gerente'); return; }
     await verificarIntegridadLogs();
   });
 
   document.getElementById('btnExportLog')?.addEventListener('click', () => {
+    if (!puedeDo('verLog')) { snack('Acceso denegado: Exclusivo del Gerente'); return; }
     const csv = ['id,timestamp,usuario,rol,mensaje,tipo,hash_sha256', ...auditEntries.map(e => `"${e.id}","${e.ts}","${e.nombre}","${e.rol}","${e.msg}","${e.tipo}","${e.hash}"`)].join('\n');
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: `scada_audit_chain_${Date.now()}.csv` });
     a.click(); URL.revokeObjectURL(a.href); log('Log de auditoría exportado con firmas SHA-256', 'info');
@@ -2421,7 +2423,7 @@ function renderAiQuickChips(rol) {
       { label: '🚗 Entrada (E1)', prompt: 'Simula la llegada de un vehículo por la entrada E1' },
       { label: '🚙 Salida (S1)', prompt: 'Simula la salida de un vehículo por el sensor S1' },
       { label: '⏱️ Ajustar Tiempos SP', prompt: 'Cambia el tiempo verde del semáforo a 30s' },
-      { label: '🛡️ Integridad Logs', prompt: 'Verifica la integridad criptográfica SHA-256 de los registros de auditoría' },
+      { label: '🔄 Reiniciar CI', prompt: 'Reinicia el sistema a condiciones iniciales' },
       { label: '📜 Mis Funciones', prompt: '¿Cuáles son mis funciones y permisos como Supervisor en este SCADA?' }
     ];
   } else {
@@ -2515,6 +2517,9 @@ const AI_TOOLS = {
     };
   },
   consultar_auditoria: (limite = 5) => {
+    if (!puedeDo('verLog')) {
+      return [{ error: 'Acceso denegado: El registro de auditoría es exclusivo para el rol de Gerente.' }];
+    }
     return auditEntries.slice(-Math.min(limite, 10)).map(e => ({
       hora: e.ts,
       usuario: e.nombre,
@@ -2649,6 +2654,7 @@ const AI_TOOLS = {
       return { exito: true, mensaje: `Tiempos de semáforo SP actualizados a Verde: ${tv/1000}s y Rojo: ${tr/1000}s.` };
     }
     if (accion === 'verificar_integridad') {
+      if (!puedeDo('verLog')) return { exito: false, error: 'Acceso denegado: La verificación criptográfica de auditoría es exclusiva del Gerente.' };
       const ok = await verificarIntegridadLogs();
       return { exito: ok, mensaje: ok ? `Cadena de ${auditEntries.length} registros SHA-256 100% íntegra.` : 'Alerta: se detectaron inconsistencias en la cadena criptográfica.' };
     }
