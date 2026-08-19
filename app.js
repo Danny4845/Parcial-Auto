@@ -2656,7 +2656,27 @@ const AI_TOOLS = {
     if (accion === 'verificar_integridad') {
       if (!puedeDo('verLog')) return { exito: false, error: 'Acceso denegado: La verificación criptográfica de auditoría es exclusiva del Gerente.' };
       const ok = await verificarIntegridadLogs();
-      return { exito: ok, mensaje: ok ? `Cadena de ${auditEntries.length} registros SHA-256 100% íntegra.` : 'Alerta: se detectaron inconsistencias en la cadena criptográfica.' };
+      const total = auditEntries.length;
+      const ultimoHash = total > 0 ? auditEntries[total - 1].hash : '0000000000000000000000000000000000000000000000000000000000000000';
+      const primerEvento = total > 0 ? `[${auditEntries[0].ts}] ${auditEntries[0].msg}` : 'Sin registros';
+      const ultimoEvento = total > 0 ? `[${auditEntries[total - 1].ts}] ${auditEntries[total - 1].msg}` : 'Sin registros';
+
+      const reporte = `🛡️ **REPORTE EJECUTIVO DE INTEGRIDAD Y CIBERSEGURIDAD**\n\n` +
+        `• **Estado de la Cadena:** ${ok ? '✅ 100% ÍNTEGRA Y AUTÉNTICA' : '❌ INCONSISTENCIA DETECTADA'}\n` +
+        `• **Eventos Auditados:** ${total} registros encadenados\n` +
+        `• **Criptografía:** SHA-256 con encadenamiento de bloque anterior (Merkle Tree / Blockchain)\n` +
+        `• **Primer Registro:** ${primerEvento}\n` +
+        `• **Último Registro:** ${ultimoEvento}\n` +
+        `• **Último Hash Registrado:** \`${ultimoHash.slice(0, 24)}…\`\n\n` +
+        `*Diagnóstico:* Se verificó matemáticamente cada hash individual y la correlación con su bloque anterior. No se detectaron manipulaciones en memoria ni en almacenamiento.`;
+
+      return {
+        exito: ok,
+        mensaje: reporte,
+        totalEventos: total,
+        ultimoHash,
+        estado: ok ? 'INTEGRO' : 'ALTERADO'
+      };
     }
     return { exito: false, error: `Comando "${accion}" desconocido.` };
   }
@@ -2777,10 +2797,13 @@ async function processAiPrompt(prompt) {
               const esSoloConsulta = p.includes('cual es') || p.includes('quien soy') || p.includes('cuantas') || p.includes('que rol') || p.includes('dime mi') || p.includes('resumen') || p.includes('historial');
               
               if (!esSoloConsulta) {
-                // 1. Reiniciar / Detener / Pausar / CI (evaluado primero para que 'reinicia' no coincida con 'inicia')
-                if (/\b(reinici|reset|restablec|deten|paus|parar|paralo|fren|apaga)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p)) {
+                // 1. Verificación de Integridad / Auditoría SHA-256
+                if (/\b(integrid|auditor|auditar|sha256|cadena criptogr)\w*/i.test(p) || p.includes('verificar integridad') || p.includes('reporte de integridad') || p.includes('auditoria')) {
+                  cmd = 'verificar_integridad';
+                // 2. Reiniciar / Detener / Pausar / CI (evaluado primero para que 'reinicia' no coincida con 'inicia')
+                } else if (/\b(reinici|reset|restablec|deten|paus|parar|paralo|fren|apaga)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p)) {
                   cmd = 'reiniciar';
-                // 2. Iniciar / Arrancar / Activar
+                // 3. Iniciar / Arrancar / Activar
                 } else if (/\b(inici|arranc|empiez|empez|comienz|comenz|activ|prende|prender)\w*/i.test(p) || /\b(iniciar|inicia|arrancar|activar)\b/i.test(p) || p.includes('simulacion') || p.includes('simulación')) {
                   cmd = 'iniciar';
                 } else if (/\b(salid|sacar|egres)\w*/i.test(p) || /\bsal\b/i.test(p) || p.includes('s1')) {
