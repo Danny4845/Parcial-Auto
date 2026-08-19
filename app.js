@@ -2494,6 +2494,19 @@ const AI_TOOLS = {
       plazasTotales: 100,
       plazasOcupadas: EST.plazasOcupadas,
       plazasLibres: 100 - EST.plazasOcupadas,
+      totalEntradas: EST.totalEntradas,
+      totalSalidas: EST.totalSalidas,
+      ciclosPorton: EST.ciclosPorton,
+      consumoEnergiaAprox: `${(EST.ciclosPorton * 45).toFixed(0)} Wh`,
+      entradasTotales: EST.totalEntradas,
+      salidasTotales: EST.totalSalidas,
+      metricas: {
+        totalEntradas: EST.totalEntradas,
+        totalSalidas: EST.totalSalidas,
+        ciclosPorton: EST.ciclosPorton,
+        consumoEnergiaAprox: `${(EST.ciclosPorton * 45).toFixed(0)} Wh`,
+        plazasOcupadas: EST.plazasOcupadas
+      },
       porton: {
         estadoActual: EST.portonEstado.toUpperCase(), // "CERRADO", "ABIERTO", "ABRIENDO", "CERRANDO"
         estaCerrado: EST.portonEstado === 'cerrado',
@@ -2665,6 +2678,17 @@ const AI_TOOLS = {
       log(`Asistente IA: Tiempos SP modificados a Verde:${tv/1000}s / Rojo:${tr/1000}s por ${sesion.nombre}`, 'ok');
       return { exito: true, mensaje: `Tiempos de semáforo SP actualizados a Verde: ${tv/1000}s y Rojo: ${tr/1000}s.` };
     }
+    if (accion === 'consultar_metricas' || accion === 'ver_metricas') {
+      if (!puedeDo('verMetricas')) return { exito: false, error: 'Acceso denegado: Tu rol no tiene permisos para consultar métricas.' };
+      const met = AI_TOOLS.consultar_metricas();
+      const mensaje = `📈 **REPORTE EJECUTIVO DE MÉTRICAS DEL ESTACIONAMIENTO**\n\n` +
+        `• **Entradas Totales:** ${met.totalEntradas} vehículos\n` +
+        `• **Salidas Totales:** ${met.totalSalidas} vehículos\n` +
+        `• **Ciclos del Portón:** ${met.ciclosPorton} aperturas/cierres\n` +
+        `• **Consumo Eléctrico Estimado:** ${met.consumoEnergiaAprox}\n` +
+        `• **Ocupación Actual:** ${met.plazasOcupadas} de 100 plazas (${met.plazasOcupadas}%)`;
+      return { exito: true, mensaje, ...met };
+    }
     if (accion === 'consultar_usuarios' || accion === 'listar_usuarios') {
       if (sesion?.rol !== 'Gerente') return { exito: false, error: 'Acceso denegado: La consulta de usuarios y roles es exclusiva del rol de Gerente.' };
       if (!usuarios || usuarios.length === 0) {
@@ -2784,7 +2808,13 @@ async function processAiPrompt(prompt) {
         try {
             const scadaStateData = {
               ...AI_TOOLS.consultar_estado(),
-              metricas: (sesion?.rol === 'Supervisor' || sesion?.rol === 'Gerente') ? AI_TOOLS.consultar_metricas() : null,
+              metricas: AI_TOOLS.consultar_metricas(),
+              totalEntradas: EST.totalEntradas,
+              totalSalidas: EST.totalSalidas,
+              ciclosPorton: EST.ciclosPorton,
+              consumoEnergiaAprox: `${(EST.ciclosPorton * 45).toFixed(0)} Wh`,
+              entradasTotales: EST.totalEntradas,
+              salidasTotales: EST.totalSalidas,
               usuariosRegistrados: sesion?.rol === 'Gerente' ? AI_TOOLS.consultar_usuarios() : []
             };
 
@@ -2824,8 +2854,11 @@ async function processAiPrompt(prompt) {
               const esSoloConsulta = p.includes('cual es') || p.includes('quien soy') || p.includes('cuantas') || p.includes('que rol') || p.includes('dime mi') || p.includes('resumen') || p.includes('historial');
               
               if (!esSoloConsulta) {
+                // Consulta de Métricas (Supervisor / Gerente)
+                if (/\b(metrica|metricas|consumo|energia|kwh|estadistic|reporte de metricas|resumen ejecutivo)\w*/i.test(p) || p.includes('metricas') || p.includes('entradas y salidas') || p.includes('cuantos vehiculos han entrado') || p.includes('cuantos carros han entrado')) {
+                  cmd = 'consultar_metricas';
                 // 1. Consulta de Usuarios (Exclusivo Gerente)
-                if (/\b(usuarios|cuentas|quienes tienen acceso|lista de usuario|mostrar usuario)\w*/i.test(p) || p.includes('listar usuarios') || p.includes('ver usuarios') || p.includes('lista de usuarios') || p.includes('usuarios registrados')) {
+                } else if (/\b(usuarios|cuentas|quienes tienen acceso|lista de usuario|mostrar usuario)\w*/i.test(p) || p.includes('listar usuarios') || p.includes('ver usuarios') || p.includes('lista de usuarios') || p.includes('usuarios registrados')) {
                   cmd = 'consultar_usuarios';
                 // 2. Verificación de Integridad / Auditoría SHA-256
                 } else if (/\b(integrid|auditor|auditar|sha256|cadena criptogr)\w*/i.test(p) || p.includes('verificar integridad') || p.includes('reporte de integridad') || p.includes('auditoria')) {
