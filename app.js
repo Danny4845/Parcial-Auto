@@ -2455,6 +2455,44 @@ function renderAiQuickChips(rol) {
   });
 }
 
+function formatAiMarkdown(text) {
+  if (!text) return '';
+  let str = text;
+
+  // Prevenir inyecciones XSS básicas
+  str = str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Tablas Markdown (| Col1 | Col2 |)
+  str = str.replace(/((?:\|[^\n]+\|\r?\n?)+)/g, (match) => {
+    const rawLines = match.trim().split(/\r?\n/).map(l => l.trim()).filter(l => l.startsWith('|') && l.endsWith('|'));
+    if (rawLines.length < 2) return match;
+    let html = '<div class="ai-table-wrapper"><table class="ai-chat-table">';
+    rawLines.forEach((line, idx) => {
+      if (idx === 1 && line.includes('---')) return; // Fila de guiones
+      const cells = line.split('|').slice(1, -1).map(c => c.trim());
+      const tag = (idx === 0) ? 'th' : 'td';
+      html += '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+    });
+    html += '</table></div>';
+    return html;
+  });
+
+  // Negrita **texto**
+  str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Cursiva *texto*
+  str = str.replace(/(^|[^*])\*(?!\*)([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
+
+  // Código en línea `código`
+  str = str.replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>');
+
+  // Saltos de línea
+  str = str.replace(/\n/g, '<br>');
+  str = str.replace(/<\/div><br>/g, '</div>').replace(/<br><div/g, '<div');
+
+  return str;
+}
+
 function appendAiMessage(sender, text, badge = null, isRefusal = false) {
   const container = document.getElementById('aiChatMessages');
   if (!container) return;
@@ -2473,7 +2511,7 @@ function appendAiMessage(sender, text, badge = null, isRefusal = false) {
   }
 
   const textNode = document.createElement('div');
-  textNode.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+  textNode.innerHTML = formatAiMarkdown(text);
   bubble.appendChild(textNode);
 
   const timeSpan = document.createElement('span');
@@ -2891,6 +2929,9 @@ async function processAiPrompt(prompt) {
                 appendAiMessage('bot', `${outText}\n\n⚠️ *${actRes.error}*`, `n8n Agente: ${cmd}`, true);
               } else if (actRes.requiereConfirmacion) {
                 appendAiMessage('bot', actRes.mensaje, 'Asistente SCADA: Confirmación');
+              } else if (cmd === 'consultar_usuarios' || cmd === 'consultar_metricas' || cmd === 'verificar_integridad') {
+                // Mostrar siempre los datos reales del SCADA
+                appendAiMessage('bot', actRes.mensaje, `Tool: ${cmd}`);
               } else {
                 appendAiMessage('bot', outText, `n8n Agente: ${cmd}`);
               }

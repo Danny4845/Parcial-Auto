@@ -602,3 +602,37 @@ html, body {
 }
 .btn-ai-send:hover { background: var(--turquoise-light); transform: scale(1.05); }
 .btn-ai-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ai-table-wrapper {
+  overflow-x: auto;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.ai-chat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+.ai-chat-table th {
+  background: rgba(255, 255, 255, 0.1);
+  color: #38bdf8;
+  padding: 5px 8px;
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+.ai-chat-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+}
+.ai-inline-code {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #4cd6c0;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
