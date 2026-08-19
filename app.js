@@ -2609,22 +2609,35 @@ async function processAiPrompt(prompt) {
   const sendBtn = document.getElementById('btnAiSend');
   if (sendBtn) sendBtn.disabled = true;
 
-  // Detección de confirmación de acción pendiente (ej: entrar/salir vehículo tras iniciar simulación)
+  // Detección de confirmación de acción pendiente (ej: iniciar sistema, entrar/salir vehículo)
   const pLower = prompt.trim().toLowerCase();
-  const isConfirm = /\b(si|sí|confirmo|confirmar|procede|proceder|ingresalo|ingrésalo|sacalo|sácalo|entra|dale|adelante|hazlo|claro|por favor|adelante|ok|afirmativo|positivo)\b/i.test(pLower);
-  const isDeny = /\b(no|cancela|cancelar|deten|parar|espera|todavia no|todavía no)\b/i.test(pLower);
+  const isConfirm = /^(si|sí|claro|ok|dale|procede|proceder|afirmativo|positivo|por favor|adelante|hazlo|confirmo|confirmar|ingresalo|ingrésalo|sacalo|sácalo|entra|saca)$/i.test(pLower) || /\b(si|sí|confirmo|confirmar|procede|proceder|ingresalo|ingrésalo|sacalo|sácalo|entra|dale|adelante|hazlo|claro|por favor|ok|afirmativo|positivo)\b/i.test(pLower);
+  const isDeny = /^(no|nop|cancelar|cancela|deten|para|espera)$/i.test(pLower) || /\b(no|cancela|cancelar|deten|parar|espera|todavia no|todavía no)\b/i.test(pLower);
 
-  if (window._aiPendingAction && (Date.now() - window._aiPendingAction.timestamp < 300000)) {
-    if (isConfirm) {
+  if (isConfirm) {
+    if (window._aiPendingAction && (Date.now() - window._aiPendingAction.timestamp < 300000)) {
       const tipo = window._aiPendingAction.tipo;
       window._aiPendingAction = null;
+
+      if (tipo === 'iniciar') {
+        await AI_TOOLS.ejecutar_comando('iniciar');
+        window._aiPendingAction = { tipo: 'entrada', timestamp: Date.now() };
+        appendAiMessage('bot', '▶️ Simulación iniciada exitosamente. El sistema SCADA está operativo.\n\n¿Deseas que proceda a ingresar el vehículo ahora?', 'Sistema Iniciado');
+        if (sendBtn) sendBtn.disabled = false;
+        return;
+      }
+
       if (tipo === 'entrada') {
         iniciarCooldownE1(3);
         EST.vehiculos.push(crearVehiculoEntrada());
         actualizarUI();
         log(`Asistente IA: Entrada de vehículo confirmada por ${sesion.nombre}`, 'info');
         appendAiMessage('bot', '✅ Confirmación recibida. El vehículo está ingresando por el sensor de entrada (E1).', 'Entrada E1');
-      } else if (tipo === 'salida') {
+        if (sendBtn) sendBtn.disabled = false;
+        return;
+      }
+
+      if (tipo === 'salida') {
         if (EST.plazasOcupadas > 0) {
           iniciarCooldownS1(3);
           EST.vehiculos.push(crearVehiculoSalida());
@@ -2635,15 +2648,22 @@ async function processAiPrompt(prompt) {
         } else {
           appendAiMessage('bot', '⚠️ El estacionamiento está vacío (0 vehículos ocupando plazas).', 'Salida S1', true);
         }
+        if (sendBtn) sendBtn.disabled = false;
+        return;
       }
-      if (sendBtn) sendBtn.disabled = false;
-      return;
-    } else if (isDeny) {
-      window._aiPendingAction = null;
-      appendAiMessage('bot', 'Entendido, acción cancelada. La simulación continuará activa sin ingresar el vehículo.', 'Operación Cancelada');
+    } else if (!EST.sistemaActivo) {
+      // Si el sistema está detenido y el usuario responde "si", inicia la simulación
+      await AI_TOOLS.ejecutar_comando('iniciar');
+      window._aiPendingAction = { tipo: 'entrada', timestamp: Date.now() };
+      appendAiMessage('bot', '▶️ Simulación iniciada exitosamente. El sistema SCADA ya está activo y operativo.\n\n¿Deseas que proceda a ingresar el vehículo ahora?', 'Sistema Iniciado');
       if (sendBtn) sendBtn.disabled = false;
       return;
     }
+  } else if (isDeny && window._aiPendingAction) {
+    window._aiPendingAction = null;
+    appendAiMessage('bot', 'Entendido, acción cancelada. No se realizarán maniobras de vehículos.', 'Operación Cancelada');
+    if (sendBtn) sendBtn.disabled = false;
+    return;
   }
 
   try {
@@ -2721,6 +2741,23 @@ async function processAiPrompt(prompt) {
                 appendAiMessage('bot', outText, `n8n Agente: ${cmd}`);
               }
             } else {
+              // Sincronización inteligente de intenciones desde el texto retornado por n8n:
+              const outLower = outText.toLowerCase();
+
+              // Si n8n afirma que inició el sistema pero estaba apagado:
+              if (!EST.sistemaActivo && (outLower.includes('iniciado la simulaci') || outLower.includes('inicié la simulaci') || outLower.includes('se encuentra operativo') || outLower.includes('sistema iniciado') || outLower.includes('activado la simulaci'))) {
+                await AI_TOOLS.ejecutar_comando('iniciar');
+              }
+
+              // Registrar preguntas pendientes si n8n pregunta al usuario
+              if (!EST.sistemaActivo && (outLower.includes('iniciar la simulaci') || outLower.includes('proceda a iniciar'))) {
+                window._aiPendingAction = { tipo: 'iniciar', timestamp: Date.now() };
+              } else if (outLower.includes('ingresar el veh') || outLower.includes('ingresar el vehículo') || outLower.includes('entrar el veh')) {
+                window._aiPendingAction = { tipo: 'entrada', timestamp: Date.now() };
+              } else if (outLower.includes('salida del veh') || outLower.includes('registrar la salida') || outLower.includes('sacar el veh')) {
+                window._aiPendingAction = { tipo: 'salida', timestamp: Date.now() };
+              }
+
               appendAiMessage('bot', outText, 'n8n Agente (Gemini)');
             }
 
