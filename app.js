@@ -2431,6 +2431,7 @@ function renderAiQuickChips(rol) {
     chips = [
       { label: '📊 Plazas', prompt: '¿Cuántas plazas hay disponibles y cuál es el estado del estacionamiento?' },
       { label: '📈 Métricas ERP', prompt: 'Muestra el resumen ejecutivo de métricas, entradas, salidas y consumo de energía' },
+      { label: '👥 Usuarios', prompt: 'Muestra la lista de todos los usuarios registrados y sus roles en el sistema SCADA' },
       { label: '🚪 Control Portón', prompt: 'Abre o cierra el portón del estacionamiento' },
       { label: '🚗 Entrada (E1)', prompt: 'Simula la llegada de un vehículo por la entrada E1' },
       { label: '🚙 Salida (S1)', prompt: 'Simula la salida de un vehículo por el sensor S1' },
@@ -2515,6 +2516,16 @@ const AI_TOOLS = {
       consumoEnergiaAprox: `${(EST.ciclosPorton * 45).toFixed(0)} Wh`,
       plazasOcupadas: EST.plazasOcupadas
     };
+  },
+  consultar_usuarios: () => {
+    if (sesion?.rol !== 'Gerente') {
+      return [{ error: 'Acceso denegado: La consulta de usuarios y roles es exclusiva del rol de Gerente.' }];
+    }
+    return usuarios.map(u => ({
+      usuario: u.nombre,
+      rol: u.rol,
+      fechaCreacion: u.fechaCreacion || 'Inicial'
+    }));
   },
   consultar_auditoria: (limite = 5) => {
     if (!puedeDo('verLog')) {
@@ -2652,6 +2663,15 @@ const AI_TOOLS = {
       snack(`SP actualizado: Verde ${tv/1000}s / Rojo ${tr/1000}s`);
       log(`Asistente IA: Tiempos SP modificados a Verde:${tv/1000}s / Rojo:${tr/1000}s por ${sesion.nombre}`, 'ok');
       return { exito: true, mensaje: `Tiempos de semáforo SP actualizados a Verde: ${tv/1000}s y Rojo: ${tr/1000}s.` };
+    }
+    if (accion === 'consultar_usuarios' || accion === 'listar_usuarios') {
+      if (sesion?.rol !== 'Gerente') return { exito: false, error: 'Acceso denegado: La consulta de usuarios y roles es exclusiva del rol de Gerente.' };
+      if (!usuarios || usuarios.length === 0) {
+        return { exito: true, mensaje: '👥 No hay usuarios adicionales registrados en el sistema.' };
+      }
+      const lista = usuarios.map(u => `• **${u.nombre}** — Rol: *${u.rol}* ${u.fechaCreacion ? `(Alta: ${u.fechaCreacion})` : ''}`).join('\n');
+      const mensaje = `👥 **USUARIOS REGISTRADOS EN EL SISTEMA SCADA (${usuarios.length})**\n\n${lista}\n\n*(🛡️ Las contraseñas se encuentran cifradas con PBKDF2 y 100.000 iteraciones).*`;
+      return { exito: true, mensaje, total: usuarios.length };
     }
     if (accion === 'verificar_integridad') {
       if (!puedeDo('verLog')) return { exito: false, error: 'Acceso denegado: La verificación criptográfica de auditoría es exclusiva del Gerente.' };
@@ -2797,8 +2817,11 @@ async function processAiPrompt(prompt) {
               const esSoloConsulta = p.includes('cual es') || p.includes('quien soy') || p.includes('cuantas') || p.includes('que rol') || p.includes('dime mi') || p.includes('resumen') || p.includes('historial');
               
               if (!esSoloConsulta) {
-                // 1. Verificación de Integridad / Auditoría SHA-256
-                if (/\b(integrid|auditor|auditar|sha256|cadena criptogr)\w*/i.test(p) || p.includes('verificar integridad') || p.includes('reporte de integridad') || p.includes('auditoria')) {
+                // 1. Consulta de Usuarios (Exclusivo Gerente)
+                if (/\b(usuarios|cuentas|quienes tienen acceso|lista de usuario|mostrar usuario)\w*/i.test(p) || p.includes('listar usuarios') || p.includes('ver usuarios') || p.includes('lista de usuarios') || p.includes('usuarios registrados')) {
+                  cmd = 'consultar_usuarios';
+                // 2. Verificación de Integridad / Auditoría SHA-256
+                } else if (/\b(integrid|auditor|auditar|sha256|cadena criptogr)\w*/i.test(p) || p.includes('verificar integridad') || p.includes('reporte de integridad') || p.includes('auditoria')) {
                   cmd = 'verificar_integridad';
                 // 2. Reiniciar / Detener / Pausar / CI (evaluado primero para que 'reinicia' no coincida con 'inicia')
                 } else if (/\b(reinici|reset|restablec|deten|paus|parar|paralo|fren|apaga)\w*/i.test(p) || /\bci\b/i.test(p) || p.includes('condiciones iniciales') || /\bpara\b/i.test(p)) {
